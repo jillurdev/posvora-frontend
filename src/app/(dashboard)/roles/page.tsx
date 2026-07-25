@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, ShieldCheck } from "lucide-react";
+import { Plus, Trash2, Pencil, Lock } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/Button";
@@ -9,15 +9,24 @@ import { Modal } from "@/components/ui/Modal";
 import { FormField } from "@/components/ui/FormField";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-import { useRoles, usePermissions, useCreateRole, useDeleteRole } from "@/features/role/hooks/useRoles";
+import {
+	useRoles,
+	usePermissions,
+	useCreateRole,
+	useUpdateRole,
+	useDeleteRole,
+} from "@/features/role/hooks/useRoles";
 import type { Role } from "@/features/role/types";
 
 export default function RolesPage() {
 	const { data: roles = [], isLoading } = useRoles();
 	const { data: permissions = [] } = usePermissions();
 	const createRole = useCreateRole();
+	const updateRole = useUpdateRole();
 	const deleteRole = useDeleteRole();
+
 	const [modalOpen, setModalOpen] = useState(false);
+	const [editingRole, setEditingRole] = useState<Role | null>(null);
 	const [name, setName] = useState("");
 	const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
@@ -25,18 +34,41 @@ export default function RolesPage() {
 		setSelectedPermissions(prev => (prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]));
 	};
 
+	const openCreateModal = () => {
+		setEditingRole(null);
+		setName("");
+		setSelectedPermissions([]);
+		setModalOpen(true);
+	};
+
+	const openEditModal = (role: Role) => {
+		setEditingRole(role);
+		setName(role.name);
+		setSelectedPermissions((role.permissions ?? []).map(p => p.permission.id));
+		setModalOpen(true);
+	};
+
+	const closeModal = () => {
+		setModalOpen(false);
+		setEditingRole(null);
+	};
+
 	const handleSubmit = () => {
+		if (editingRole) {
+			updateRole.mutate(
+				{ id: editingRole.id, payload: { name, permissionIds: selectedPermissions } },
+				{ onSuccess: closeModal },
+			);
+			return;
+		}
+
 		createRole.mutate(
 			{ name, permissionIds: selectedPermissions },
-			{
-				onSuccess: () => {
-					setName("");
-					setSelectedPermissions([]);
-					setModalOpen(false);
-				},
-			},
+			{ onSuccess: closeModal },
 		);
 	};
+
+	const isSaving = createRole.isPending || updateRole.isPending;
 
 	const columns: Column<Role>[] = [
 		{ header: "Role", accessor: r => <span className="font-medium text-slate-900">{r.name}</span> },
@@ -45,9 +77,26 @@ export default function RolesPage() {
 		{
 			header: "",
 			accessor: r => (
-				<button onClick={() => deleteRole.mutate(r.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
-					<Trash2 className="h-4 w-4" />
-				</button>
+				<div className="flex items-center gap-1">
+					<button
+						onClick={() => openEditModal(r)}
+						title="Edit permissions"
+						className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+						<Pencil className="h-4 w-4" />
+					</button>
+					{r.isSystem ? (
+						<span title="System roles can't be deleted" className="rounded-lg p-1.5 text-slate-300">
+							<Lock className="h-4 w-4" />
+						</span>
+					) : (
+						<button
+							onClick={() => deleteRole.mutate(r.id)}
+							title="Delete role"
+							className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
+							<Trash2 className="h-4 w-4" />
+						</button>
+					)}
+				</div>
 			),
 		},
 	];
@@ -57,15 +106,20 @@ export default function RolesPage() {
 			<PageHeader
 				title="Roles & Access"
 				description="Create custom roles and control what each role can do."
-				action={<Button onClick={() => setModalOpen(true)}><Plus className="h-4 w-4" /> Add role</Button>}
+				action={<Button onClick={openCreateModal}><Plus className="h-4 w-4" /> Add role</Button>}
 			/>
 
 			<DataTable columns={columns} data={roles} isLoading={isLoading} rowKey={r => r.id} emptyTitle="No custom roles yet" />
 
-			<Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add role" size="lg">
+			<Modal open={modalOpen} onClose={closeModal} title={editingRole ? `Edit ${editingRole.name}` : "Add role"} size="lg">
 				<div className="space-y-4">
 					<FormField label="Role name" required>
-						<Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Floor Supervisor" />
+						<Input
+							value={name}
+							onChange={e => setName(e.target.value)}
+							placeholder="e.g. Floor Supervisor"
+							disabled={!!editingRole?.systemRole && editingRole.systemRole !== "CUSTOM"}
+						/>
 					</FormField>
 					<FormField label="Permissions">
 						<div className="grid max-h-64 grid-cols-1 gap-2 overflow-y-auto rounded-lg border border-slate-200 p-3 sm:grid-cols-2">
@@ -84,8 +138,8 @@ export default function RolesPage() {
 						</div>
 					</FormField>
 					<div className="flex justify-end gap-2 pt-2">
-						<Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
-						<Button onClick={handleSubmit} isLoading={createRole.isPending} disabled={!name}>Save</Button>
+						<Button type="button" variant="outline" onClick={closeModal}>Cancel</Button>
+						<Button onClick={handleSubmit} isLoading={isSaving} disabled={!name}>Save</Button>
 					</div>
 				</div>
 			</Modal>

@@ -8,7 +8,8 @@ export interface Role {
 	id: string;
 	name: string;
 	systemRole?: string | null;
-	permissions?: Permission[];
+	isSystem?: boolean;
+	permissions?: { permission: Permission }[];
 }
 
 export interface RolePayload {

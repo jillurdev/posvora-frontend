@@ -1,24 +1,59 @@
+"use client";
+
 import {
 	InputHTMLAttributes,
 	SelectHTMLAttributes,
 	TextareaHTMLAttributes,
 	forwardRef,
+	useState,
 } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Input = forwardRef<
 	HTMLInputElement,
 	InputHTMLAttributes<HTMLInputElement>
->(({ className, ...props }, ref) => (
-	<input
-		ref={ref}
-		className={cn(
-			"h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-50",
-			className,
-		)}
-		{...props}
-	/>
-));
+>(({ className, type, ...props }, ref) => {
+	const [show, setShow] = useState(false);
+	const isPassword = type === "password";
+	const resolvedType = isPassword ? (show ? "text" : "password") : type;
+
+	if (!isPassword) {
+		return (
+			<input
+				ref={ref}
+				type={type}
+				className={cn(
+					"h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-50",
+					className,
+				)}
+				{...props}
+			/>
+		);
+	}
+
+	return (
+		<div className="relative">
+			<input
+				ref={ref}
+				type={resolvedType}
+				className={cn(
+					"h-10 w-full rounded-lg border border-slate-300 bg-white px-3 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-50",
+					className,
+				)}
+				{...props}
+			/>
+			<button
+				type="button"
+				tabIndex={-1}
+				onClick={() => setShow(v => !v)}
+				className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+				aria-label={show ? "Hide password" : "Show password"}>
+				{show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+			</button>
+		</div>
+	);
+});
 
 Input.displayName = "Input";
 

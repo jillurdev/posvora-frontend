@@ -9,10 +9,11 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { FormField } from "@/components/ui/FormField";
-import { Input } from "@/components/ui/Input";
+import { Input, Select } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 import { useActiveShop } from "@/context/ActiveShopContext";
+import { useRoles } from "@/features/role/hooks/useRoles";
 import {
 	useEmployees,
 	useCreateEmployee,
@@ -32,6 +33,7 @@ export default function EmployeesPage() {
 
 	const createEmployee = useCreateEmployee();
 	const deleteEmployee = useDeleteEmployee();
+	const { data: roles = [] } = useRoles();
 
 	const [modalOpen, setModalOpen] = useState(false);
 
@@ -189,6 +191,29 @@ export default function EmployeesPage() {
 									required: "Password is required",
 								})}
 							/>
+						</FormField>
+
+						<FormField
+							id="roleId"
+							label="Role"
+							required
+							error={errors.roleId?.message}>
+							<Select
+								id="roleId"
+								defaultValue=""
+								aria-invalid={!!errors.roleId}
+								{...register("roleId", {
+									required: "Role is required",
+								})}>
+								<option value="" disabled>
+									Select a role
+								</option>
+								{roles.map(role => (
+									<option key={role.id} value={role.id}>
+										{role.name}
+									</option>
+								))}
+							</Select>
 						</FormField>
 
 						<FormField id="baseSalary" label="Base salary">

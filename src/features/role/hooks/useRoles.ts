@@ -25,6 +25,19 @@ export function useCreateRole() {
 	});
 }
 
+export function useUpdateRole() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, payload }: { id: string; payload: Partial<RolePayload> }) =>
+			roleApi.update(id, payload),
+		onSuccess: () => {
+			toast.success("Role updated");
+			qc.invalidateQueries({ queryKey: ["roles"] });
+		},
+		onError: (err: Error) => toast.error(err.message),
+	});
+}
+
 export function useDeleteRole() {
 	const qc = useQueryClient();
 	return useMutation({

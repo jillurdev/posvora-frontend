@@ -8,9 +8,10 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { FormField } from "@/components/ui/FormField";
-import { Input } from "@/components/ui/Input";
+import { Input, Select } from "@/components/ui/Input";
 import { useShops, useCreateShop, useDeleteShop } from "@/features/shop/hooks/useShops";
 import type { Shop, ShopPayload } from "@/features/shop/types";
+import { CURRENCIES } from "@/lib/currencies";
 
 export default function ShopsPage() {
 	const { data: shops = [], isLoading } = useShops();
@@ -66,7 +67,11 @@ export default function ShopsPage() {
 					</div>
 					<div className="grid grid-cols-2 gap-4">
 						<FormField label="Currency">
-							<Input placeholder="BDT" {...register("currency")} />
+							<Select defaultValue="BDT" {...register("currency")}>
+								{CURRENCIES.map(c => (
+									<option key={c.code} value={c.code}>{c.label}</option>
+								))}
+							</Select>
 						</FormField>
 						<FormField label="Timezone">
 							<Input placeholder="Asia/Dhaka" {...register("timezone")} />
