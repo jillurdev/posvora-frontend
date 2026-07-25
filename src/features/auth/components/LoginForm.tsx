@@ -53,8 +53,10 @@ export function LoginForm() {
 						{...register("password")}
 					/>
 				</FormField>
-				<div className="-mt-2 text-right">
-					<Link href="/forgot-password" className="text-sm text-slate-500 hover:text-slate-700 hover:underline">
+				<div className="flex justify-end">
+					<Link
+						href="/forgot-password"
+						className="text-sm font-medium text-slate-500 hover:text-slate-900 hover:underline">
 						Forgot password?
 					</Link>
 				</div>

@@ -27,3 +27,19 @@ export const changePasswordSchema = z
 		path: ["confirmPassword"],
 	});
 export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
+
+export const forgotPasswordSchema = z.object({
+	email: z.string().email("Enter a valid email"),
+});
+export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+
+export const resetPasswordSchema = z
+	.object({
+		newPassword: z.string().min(6, "Password must be at least 6 characters"),
+		confirmPassword: z.string().min(6),
+	})
+	.refine(data => data.newPassword === data.confirmPassword, {
+		message: "Passwords do not match",
+		path: ["confirmPassword"],
+	});
+export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;

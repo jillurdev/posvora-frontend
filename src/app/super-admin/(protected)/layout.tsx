@@ -3,16 +3,20 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ShieldCheck, LayoutDashboard, LifeBuoy, Users, LogOut } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, LifeBuoy, LogOut, Building2, CreditCard, Users } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
+import { Badge } from "@/components/ui/Badge";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useAdminLogout } from "@/features/admin-auth/hooks/useAdminAuth";
+import type { SuperAdminRole } from "@/features/admin-auth/types";
 import { cn } from "@/lib/utils";
 
-const NAV = [
-	{ label: "Dashboard", href: "/super-admin", icon: LayoutDashboard },
+const NAV: { label: string; href: string; icon: typeof LayoutDashboard; exact?: boolean; roles?: SuperAdminRole[] }[] = [
+	{ label: "Dashboard", href: "/super-admin", icon: LayoutDashboard, exact: true },
+	{ label: "Organizations", href: "/super-admin/organizations", icon: Building2, roles: ["OWNER", "ADMIN"] },
+	{ label: "Plans", href: "/super-admin/plans", icon: CreditCard, roles: ["OWNER", "ADMIN"] },
+	{ label: "Platform Staff", href: "/super-admin/staff", icon: Users, roles: ["OWNER"] },
 	{ label: "Support Tickets", href: "/super-admin/support", icon: LifeBuoy },
-	{ label: "Staff", href: "/super-admin/staff", icon: Users },
 ];
 
 export default function SuperAdminProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -41,8 +45,8 @@ export default function SuperAdminProtectedLayout({ children }: { children: Reac
 					<span className="text-sm font-semibold text-white">Platform Admin</span>
 				</div>
 				<nav className="flex-1 space-y-1 px-3 py-4">
-					{NAV.map(item => {
-						const active = pathname === item.href || pathname.startsWith(item.href + "/");
+					{NAV.filter(item => !item.roles || item.roles.includes(admin.role)).map(item => {
+						const active = item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(item.href + "/");
 						const Icon = item.icon;
 						return (
 							<Link
@@ -60,7 +64,12 @@ export default function SuperAdminProtectedLayout({ children }: { children: Reac
 					})}
 				</nav>
 				<div className="border-t border-slate-800 p-3">
-					<div className="px-3 py-2 text-xs text-slate-500">{admin.email}</div>
+					<div className="flex items-center justify-between px-3 py-2">
+						<span className="truncate text-xs text-slate-500">{admin.email}</span>
+						<Badge tone={admin.role === "OWNER" ? "success" : admin.role === "ADMIN" ? "info" : "default"} className="shrink-0">
+							{admin.role}
+						</Badge>
+					</div>
 					<button
 						onClick={() => logout.mutate()}
 						className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 hover:bg-slate-900 hover:text-slate-200"

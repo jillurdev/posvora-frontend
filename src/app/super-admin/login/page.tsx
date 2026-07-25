@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { FormField } from "@/components/ui/FormField";
 import { Input } from "@/components/ui/Input";
@@ -35,33 +36,51 @@ export default function SuperAdminLoginPage() {
 					<div className="flex h-11 w-11 items-center justify-center rounded-lg bg-slate-800">
 						<ShieldCheck className="h-5 w-5 text-slate-300" />
 					</div>
-					<h1 className="mt-4 text-lg font-semibold text-white">Platform Admin</h1>
+					<h1 className="mt-4 text-lg font-semibold text-white">
+						Platform Admin
+					</h1>
 					<p className="mt-1 text-sm text-slate-400">
-						This is a separate, staff-only login — not your Posvora business account.
+						This is a separate, staff-only login — not your Posvora business
+						account.
 					</p>
 				</div>
 
 				<form onSubmit={handleSubmit} className="mt-8 space-y-4">
-					<FormField label="Email" required className="[&_label]:text-slate-300">
+					<FormField
+						label="Email"
+						required
+						className="[&_label]:text-slate-300">
 						<Input
 							type="email"
 							value={email}
 							onChange={e => setEmail(e.target.value)}
+							placeholder="Enter your email"
 							required
 							autoComplete="username"
 							className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
 						/>
 					</FormField>
-					<FormField label="Password" required className="[&_label]:text-slate-300">
+					<FormField
+						label="Password"
+						required
+						className="[&_label]:text-slate-300">
 						<Input
 							type="password"
 							value={password}
 							onChange={e => setPassword(e.target.value)}
+							placeholder="xxxxxx"
 							required
 							autoComplete="current-password"
 							className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
 						/>
 					</FormField>
+					<div className="flex justify-end">
+						<Link
+							href="/super-admin/forgot-password"
+							className="text-sm font-medium text-slate-400 hover:text-slate-200 hover:underline">
+							Forgot password?
+						</Link>
+					</div>
 					<Button type="submit" className="w-full" isLoading={isPending}>
 						Sign in
 					</Button>

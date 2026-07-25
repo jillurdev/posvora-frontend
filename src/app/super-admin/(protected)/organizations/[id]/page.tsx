@@ -1,0 +1,204 @@
+"use client";
+
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Building2, Mail, Phone, Store } from "lucide-react";
+import { PageHeader } from "@/components/common/PageHeader";
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Input";
+import { Modal } from "@/components/ui/Modal";
+import { Spinner } from "@/components/ui/Spinner";
+import {
+	useAdminAssignSubscription,
+	useAdminOrganization,
+	useAdminPlans,
+	useAdminToggleOrganization,
+} from "@/features/super-admin/hooks/useSuperAdmin";
+import { formatDate } from "@/lib/utils";
+
+function formatPrice(price: string | number) {
+	const n = typeof price === "string" ? Number(price) : price;
+	return `৳${n.toLocaleString()}`;
+}
+
+export default function OrganizationDetailPage() {
+	const params = useParams<{ id: string }>();
+	const router = useRouter();
+	const { data: org, isLoading } = useAdminOrganization(params.id);
+	const { data: plans } = useAdminPlans();
+	const toggleOrg = useAdminToggleOrganization();
+	const assignSubscription = useAdminAssignSubscription(params.id);
+
+	const [planModalOpen, setPlanModalOpen] = useState(false);
+	const [selectedPlanId, setSelectedPlanId] = useState("");
+
+	if (isLoading) {
+		return (
+			<div className="flex justify-center py-16">
+				<Spinner />
+			</div>
+		);
+	}
+
+	if (!org) return null;
+
+	const openPlanModal = () => {
+		setSelectedPlanId(org.subscription?.plan?.id ?? plans?.[0]?.id ?? "");
+		setPlanModalOpen(true);
+	};
+
+	const handleAssignPlan = () => {
+		if (!selectedPlanId) return;
+		assignSubscription.mutate(
+			{ planId: selectedPlanId, status: "ACTIVE" },
+			{ onSuccess: () => setPlanModalOpen(false) },
+		);
+	};
+
+	return (
+		<div>
+			<button
+				onClick={() => router.push("/super-admin/organizations")}
+				className="mb-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900">
+				<ArrowLeft className="h-4 w-4" /> Back to organizations
+			</button>
+
+			<PageHeader
+				title={org.name}
+				description={`Business type: ${org.businessType}`}
+				action={
+					<div className="flex gap-2">
+						<Button
+							variant="outline"
+							isLoading={toggleOrg.isPending}
+							onClick={() => toggleOrg.mutate({ id: org.id, isActive: !org.isActive })}>
+							{org.isActive ? "Suspend organization" : "Reactivate organization"}
+						</Button>
+					</div>
+				}
+			/>
+
+			<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+				{/* Overview */}
+				<div className="rounded-xl border border-slate-200 bg-white p-5 lg:col-span-2">
+					<h3 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900">
+						<Building2 className="h-4 w-4 text-slate-400" /> Overview
+					</h3>
+					<dl className="grid grid-cols-2 gap-4 text-sm">
+						<div>
+							<dt className="text-slate-500">Status</dt>
+							<dd className="mt-1">{org.isActive ? <Badge tone="success">Active</Badge> : <Badge tone="danger">Suspended</Badge>}</dd>
+						</div>
+						<div>
+							<dt className="text-slate-500">Created</dt>
+							<dd className="mt-1 text-slate-900">{formatDate(org.createdAt)}</dd>
+						</div>
+						<div>
+							<dt className="text-slate-500">Owner</dt>
+							<dd className="mt-1 text-slate-900">{org.owner?.name ?? "—"}</dd>
+						</div>
+						<div>
+							<dt className="text-slate-500">Owner contact</dt>
+							<dd className="mt-1 flex flex-col gap-1 text-slate-900">
+								{org.owner?.email && (
+									<span className="flex items-center gap-1">
+										<Mail className="h-3.5 w-3.5 text-slate-400" /> {org.owner.email}
+									</span>
+								)}
+								{org.owner?.phone && (
+									<span className="flex items-center gap-1">
+										<Phone className="h-3.5 w-3.5 text-slate-400" /> {org.owner.phone}
+									</span>
+								)}
+							</dd>
+						</div>
+						<div>
+							<dt className="text-slate-500">Team members</dt>
+							<dd className="mt-1 text-slate-900">{org._count?.users ?? "—"}</dd>
+						</div>
+						<div>
+							<dt className="text-slate-500">Support tickets</dt>
+							<dd className="mt-1 text-slate-900">{org._count?.supportTickets ?? "—"}</dd>
+						</div>
+					</dl>
+
+					<h3 className="mb-3 mt-6 flex items-center gap-2 text-sm font-semibold text-slate-900">
+						<Store className="h-4 w-4 text-slate-400" /> Shops
+					</h3>
+					{org.shops && org.shops.length > 0 ? (
+						<ul className="divide-y divide-slate-100 rounded-lg border border-slate-100">
+							{org.shops.map(shop => (
+								<li key={shop.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
+									<span className="font-medium text-slate-900">{shop.name}</span>
+									{shop.isActive ? <Badge tone="success">Active</Badge> : <Badge tone="danger">Inactive</Badge>}
+								</li>
+							))}
+						</ul>
+					) : (
+						<p className="text-sm text-slate-400">No shops created yet.</p>
+					)}
+				</div>
+
+				{/* Subscription */}
+				<div className="rounded-xl border border-slate-200 bg-white p-5">
+					<div className="mb-4 flex items-center justify-between">
+						<h3 className="text-sm font-semibold text-slate-900">Subscription</h3>
+						<Button variant="outline" size="sm" onClick={openPlanModal}>
+							{org.subscription ? "Change plan" : "Assign plan"}
+						</Button>
+					</div>
+
+					{org.subscription ? (
+						<dl className="space-y-3 text-sm">
+							<div>
+								<dt className="text-slate-500">Plan</dt>
+								<dd className="mt-1 font-medium text-slate-900">{org.subscription.plan.name}</dd>
+							</div>
+							<div>
+								<dt className="text-slate-500">Price</dt>
+								<dd className="mt-1 text-slate-900">
+									{formatPrice(org.subscription.plan.price)} / {org.subscription.plan.billingCycle.toLowerCase()}
+								</dd>
+							</div>
+							<div>
+								<dt className="text-slate-500">Status</dt>
+								<dd className="mt-1">
+									<Badge tone={org.subscription.status === "ACTIVE" ? "success" : org.subscription.status === "TRIALING" ? "info" : "warning"}>
+										{org.subscription.status}
+									</Badge>
+								</dd>
+							</div>
+							{org.subscription.currentEnd && (
+								<div>
+									<dt className="text-slate-500">Renews / ends</dt>
+									<dd className="mt-1 text-slate-900">{formatDate(org.subscription.currentEnd)}</dd>
+								</div>
+							)}
+						</dl>
+					) : (
+						<p className="text-sm text-slate-400">No subscription assigned yet.</p>
+					)}
+				</div>
+			</div>
+
+			<Modal open={planModalOpen} onClose={() => setPlanModalOpen(false)} title="Assign subscription plan">
+				<div className="space-y-4">
+					<div>
+						<label className="mb-2 block text-sm font-medium text-slate-700">Plan</label>
+						<Select value={selectedPlanId} onChange={e => setSelectedPlanId(e.target.value)}>
+							{plans?.map(plan => (
+								<option key={plan.id} value={plan.id}>
+									{plan.name} — {formatPrice(plan.price)}/{plan.billingCycle.toLowerCase()}
+								</option>
+							))}
+						</Select>
+					</div>
+					<Button className="w-full" isLoading={assignSubscription.isPending} onClick={handleAssignPlan}>
+						Save subscription
+					</Button>
+				</div>
+			</Modal>
+		</div>
+	);
+}

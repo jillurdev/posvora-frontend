@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { superAdminApi } from "../api";
 import type { SupportTicketStatus } from "@/features/support/types";
-import type { CreateStaffPayload } from "../staff-types";
+import type { AssignSubscriptionPayload, CreatePlanPayload, CreatePlatformAdminPayload, UpdatePlanPayload } from "../types";
 
 export function useAdminDashboard() {
 	return useQuery({ queryKey: ["admin", "dashboard"], queryFn: superAdminApi.dashboard });
@@ -14,19 +14,112 @@ export function useAdminOrganizations(params?: { page?: number; limit?: number; 
 	return useQuery({ queryKey: ["admin", "organizations", params], queryFn: () => superAdminApi.organizations(params) });
 }
 
-export function useToggleOrganization() {
+export function useAdminOrganization(id: string) {
+	return useQuery({
+		queryKey: ["admin", "organizations", id],
+		queryFn: () => superAdminApi.organization(id),
+		enabled: !!id,
+	});
+}
+
+export function useAdminToggleOrganization() {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
-			superAdminApi.toggleOrganization(id, isActive),
+		mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => superAdminApi.toggleOrganization(id, isActive),
 		onSuccess: () => {
 			qc.invalidateQueries({ queryKey: ["admin", "organizations"] });
-			toast.success("Organization updated");
+			qc.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+			toast.success("Organization status updated");
 		},
 		onError: (err: Error) => toast.error(err.message || "Could not update organization"),
 	});
 }
 
+export function useAdminAssignSubscription(organizationId: string) {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (payload: AssignSubscriptionPayload) => superAdminApi.assignSubscription(organizationId, payload),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["admin", "organizations", organizationId] });
+			qc.invalidateQueries({ queryKey: ["admin", "organizations"] });
+			qc.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+			toast.success("Subscription updated");
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not update subscription"),
+	});
+}
+
+// ── Plans ──────────────────────────────────────────────────────
+export function useAdminPlans() {
+	return useQuery({ queryKey: ["admin", "plans"], queryFn: superAdminApi.plans });
+}
+
+export function useAdminCreatePlan() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (payload: CreatePlanPayload) => superAdminApi.createPlan(payload),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["admin", "plans"] });
+			toast.success("Plan created");
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not create plan"),
+	});
+}
+
+export function useAdminUpdatePlan(id: string) {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (payload: UpdatePlanPayload) => superAdminApi.updatePlan(id, payload),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["admin", "plans"] });
+			toast.success("Plan updated");
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not update plan"),
+	});
+}
+
+export function useAdminTogglePlan() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => superAdminApi.togglePlan(id, isActive),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["admin", "plans"] });
+			toast.success("Plan status updated");
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not update plan status"),
+	});
+}
+
+// ── Platform staff ─────────────────────────────────────────────
+export function useAdminStaff() {
+	return useQuery({ queryKey: ["admin", "admins"], queryFn: superAdminApi.admins });
+}
+
+export function useAdminCreateStaff() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (payload: CreatePlatformAdminPayload) => superAdminApi.createAdmin(payload),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["admin", "admins"] });
+			toast.success("Platform admin created");
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not create admin"),
+	});
+}
+
+export function useAdminToggleStaff() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => superAdminApi.toggleAdmin(id, isActive),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["admin", "admins"] });
+			toast.success("Admin status updated");
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not update admin status"),
+	});
+}
+
+// ── Support tickets ────────────────────────────────────────────
 export function useAdminSupportTickets(status?: string) {
 	return useQuery({
 		queryKey: ["admin", "support-tickets", status],
@@ -61,43 +154,5 @@ export function useAdminUpdateTicketStatus(id: string) {
 			toast.success("Status updated");
 		},
 		onError: (err: Error) => toast.error(err.message || "Could not update status"),
-	});
-}
-
-// ---- Platform staff ----
-export function useAdminStaff() {
-	return useQuery({ queryKey: ["admin", "staff"], queryFn: superAdminApi.listStaff });
-}
-
-export function useCreateStaff() {
-	const qc = useQueryClient();
-	return useMutation({
-		mutationFn: (payload: CreateStaffPayload) => superAdminApi.createStaff(payload),
-		onSuccess: () => {
-			qc.invalidateQueries({ queryKey: ["admin", "staff"] });
-			toast.success("Staff account created");
-		},
-		onError: (err: Error) => toast.error(err.message || "Could not create staff account"),
-	});
-}
-
-export function useToggleStaff() {
-	const qc = useQueryClient();
-	return useMutation({
-		mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => superAdminApi.toggleStaff(id, isActive),
-		onSuccess: () => {
-			qc.invalidateQueries({ queryKey: ["admin", "staff"] });
-			toast.success("Staff account updated");
-		},
-		onError: (err: Error) => toast.error(err.message || "Could not update staff account"),
-	});
-}
-
-export function useResetStaffPassword() {
-	return useMutation({
-		mutationFn: ({ id, newPassword }: { id: string; newPassword: string }) =>
-			superAdminApi.resetStaffPassword(id, newPassword),
-		onSuccess: () => toast.success("Password reset"),
-		onError: (err: Error) => toast.error(err.message || "Could not reset password"),
 	});
 }

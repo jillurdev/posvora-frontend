@@ -19,6 +19,15 @@ export interface ChangePasswordPayload {
 	newPassword: string;
 }
 
+export interface ForgotPasswordPayload {
+	email: string;
+}
+
+export interface ResetPasswordPayload {
+	token: string;
+	newPassword: string;
+}
+
 export interface AuthResult {
 	user: AuthUser;
 	accessToken?: string;
