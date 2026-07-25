@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ShieldCheck, LayoutDashboard, LifeBuoy, LogOut } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, LifeBuoy, Users, LogOut } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useAdminLogout } from "@/features/admin-auth/hooks/useAdminAuth";
@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
 	{ label: "Dashboard", href: "/super-admin", icon: LayoutDashboard },
 	{ label: "Support Tickets", href: "/super-admin/support", icon: LifeBuoy },
+	{ label: "Staff", href: "/super-admin/staff", icon: Users },
 ];
 
 export default function SuperAdminProtectedLayout({ children }: { children: React.ReactNode }) {

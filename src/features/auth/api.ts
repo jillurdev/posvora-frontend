@@ -17,5 +17,9 @@ export const authApi = {
 		httpClient.post<AuthResult>("/auth/refresh", { refreshToken }),
 	changePassword: (payload: ChangePasswordPayload) =>
 		httpClient.post("/auth/change-password", payload),
+	forgotPassword: (email: string) =>
+		httpClient.post<{ sent: boolean }>("/auth/forgot-password", { email }),
+	resetPassword: (token: string, newPassword: string) =>
+		httpClient.post<{ reset: boolean }>("/auth/reset-password", { token, newPassword }),
 	me: () => httpClient.get<AuthResult["user"]>("/users/me"),
 };

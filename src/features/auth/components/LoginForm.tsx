@@ -53,6 +53,11 @@ export function LoginForm() {
 						{...register("password")}
 					/>
 				</FormField>
+				<div className="-mt-2 text-right">
+					<Link href="/forgot-password" className="text-sm text-slate-500 hover:text-slate-700 hover:underline">
+						Forgot password?
+					</Link>
+				</div>
 				<Button type="submit" className="w-full" isLoading={isPending}>
 					Sign in
 				</Button>

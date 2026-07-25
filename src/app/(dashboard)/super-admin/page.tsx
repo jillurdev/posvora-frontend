@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { useAdminDashboard, useAdminOrganizations, useToggleOrganization } from "@/features/super-admin/hooks/useSuperAdmin";
+import { useAuth } from "@/context/AuthContext";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { useAdminDashboard, useAdminOrganizations } from "@/features/super-admin/hooks/useSuperAdmin";
 import type { AdminOrganization } from "@/features/super-admin/types";
 import { formatDate } from "@/lib/utils";
 
@@ -20,28 +22,19 @@ function StatCard({ label, value, href }: { label: string; value: string | numbe
 }
 
 export default function SuperAdminPage() {
+	const { user } = useAuth();
 	const { data: dashboard } = useAdminDashboard();
 	const { data, isLoading } = useAdminOrganizations();
-	const toggle = useToggleOrganization();
+
+	if (!user?.roles?.includes("SUPER_ADMIN")) {
+		return <EmptyState icon={ShieldCheck} title="Restricted" description="This area is for platform super admins only." />;
+	}
 
 	const columns: Column<AdminOrganization>[] = [
 		{ header: "Organization", accessor: o => <span className="font-medium text-slate-900">{o.name}</span> },
 		{ header: "Business type", accessor: o => o.businessType },
 		{ header: "Status", accessor: o => (o.isActive ? <Badge tone="success">Active</Badge> : <Badge tone="danger">Suspended</Badge>) },
 		{ header: "Created", accessor: o => formatDate(o.createdAt) },
-		{
-			header: "",
-			accessor: o => (
-				<Button
-					size="sm"
-					variant="outline"
-					isLoading={toggle.isPending}
-					onClick={() => toggle.mutate({ id: o.id, isActive: !o.isActive })}
-				>
-					{o.isActive ? "Suspend" : "Reactivate"}
-				</Button>
-			),
-		},
 	];
 
 	return (
