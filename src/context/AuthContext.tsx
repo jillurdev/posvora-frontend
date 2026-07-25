@@ -35,7 +35,7 @@ const PROTECTED_PREFIXES = [
 	"/audit-logs",
 	"/notifications",
 	"/settings",
-	"/super-admin",
+	"/support",
 ];
 
 export function AuthProvider({ children }: { children: ReactNode }) {

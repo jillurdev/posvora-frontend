@@ -1,17 +1,16 @@
 import { Store } from "lucide-react";
 import { siteConfig } from "@/config/site";
-import Link from "next/link";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<div className="flex min-h-screen">
 			<div className="hidden w-1/2 flex-col justify-between bg-slate-900 p-10 text-white lg:flex">
-				<Link href={'/'} className="flex items-center gap-2">
+				<div className="flex items-center gap-2">
 					<div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
 						<Store className="h-5 w-5" />
 					</div>
 					<span className="text-lg font-semibold">{siteConfig.name}</span>
-				</Link>
+				</div>
 				<div>
 					<h2 className="text-3xl font-semibold leading-tight">
 						Run your entire business from one dashboard.

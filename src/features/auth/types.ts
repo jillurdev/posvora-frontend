@@ -14,11 +14,6 @@ export interface RegisterPayload {
 	businessType: string;
 }
 
-export interface AdminLoginPayload {
-	email: string;
-	password: string;
-}
-
 export interface ChangePasswordPayload {
 	oldPassword: string;
 	newPassword: string;

@@ -16,6 +16,7 @@ import {
 	FileClock,
 	CreditCard,
 	Settings,
+	LifeBuoy,
 } from "lucide-react";
 import type { SystemRole } from "@/types/roles";
 
@@ -43,6 +44,7 @@ export const NAV_ITEMS: NavItem[] = [
 	{ label: "Subscription", href: "/subscription", icon: CreditCard, roles: ["OWNER"] },
 	{ label: "Audit Logs", href: "/audit-logs", icon: FileClock, roles: ["OWNER", "MANAGER"] },
 	{ label: "Notifications", href: "/notifications", icon: Bell },
+	{ label: "Support", href: "/support", icon: LifeBuoy },
 	{ label: "Settings", href: "/settings", icon: Settings },
 ];
 

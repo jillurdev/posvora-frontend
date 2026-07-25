@@ -4,7 +4,6 @@ import type {
 	ChangePasswordPayload,
 	LoginPayload,
 	RegisterPayload,
-	AdminLoginPayload,
 } from "./types";
 
 export const authApi = {
@@ -12,8 +11,6 @@ export const authApi = {
 		httpClient.post<AuthResult>("/auth/register", payload),
 	login: (payload: LoginPayload) =>
 		httpClient.post<AuthResult>("/auth/login", payload),
-	adminLogin: (payload: AdminLoginPayload) =>
-		httpClient.post<AuthResult>("/auth/admin/login", payload),
 	logout: (refreshToken?: string) =>
 		httpClient.post("/auth/logout", { refreshToken }),
 	refresh: (refreshToken?: string) =>
