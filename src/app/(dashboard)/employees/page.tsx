@@ -8,8 +8,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { FormField } from "@/components/ui/FormField";
-import { Input, Select } from "@/components/ui/Input";
+import { TextField, SelectField } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 import { useActiveShop } from "@/context/ActiveShopContext";
@@ -133,103 +132,66 @@ export default function EmployeesPage() {
 				size="lg">
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-						<FormField
+						<TextField
 							id="name"
 							label="Name"
 							required
-							error={errors.name?.message}>
-							<Input
-								id="name"
-								autoComplete="name"
-								aria-invalid={!!errors.name}
-								className={
-									errors.name ? "border-red-500 focus:ring-red-200" : ""
-								}
-								{...register("name", {
-									required: "Name is required",
-								})}
-							/>
-						</FormField>
+							autoComplete="name"
+							error={errors.name?.message}
+							{...register("name", { required: "Name is required" })}
+						/>
 
-						<FormField
+						<TextField
 							id="email"
 							label="Email"
+							type="email"
 							required
-							error={errors.email?.message}>
-							<Input
-								id="email"
-								type="email"
-								autoComplete="email"
-								aria-invalid={!!errors.email}
-								className={
-									errors.email ? "border-red-500 focus:ring-red-200" : ""
-								}
-								{...register("email", {
-									required: "Email is required",
-								})}
-							/>
-						</FormField>
+							autoComplete="email"
+							error={errors.email?.message}
+							{...register("email", { required: "Email is required" })}
+						/>
 
-						<FormField id="phone" label="Phone">
-							<Input id="phone" autoComplete="tel" {...register("phone")} />
-						</FormField>
+						<TextField id="phone" label="Phone" autoComplete="tel" {...register("phone")} />
 
-						<FormField
+						<TextField
 							id="password"
 							label="Temporary password"
+							type="password"
 							hint="The employee will be required to set their own password the first time they log in."
 							required
-							error={errors.password?.message}>
-							<Input
-								id="password"
-								type="password"
-								autoComplete="new-password"
-								aria-invalid={!!errors.password}
-								className={
-									errors.password ? "border-red-500 focus:ring-red-200" : ""
-								}
-								{...register("password", {
-									required: "Password is required",
-								})}
-							/>
-						</FormField>
+							autoComplete="new-password"
+							error={errors.password?.message}
+							{...register("password", { required: "Password is required" })}
+						/>
 
-						<FormField
+						<SelectField
 							id="roleId"
 							label="Role"
 							required
-							error={errors.roleId?.message}>
-							<Select
-								id="roleId"
-								defaultValue=""
-								aria-invalid={!!errors.roleId}
-								{...register("roleId", {
-									required: "Role is required",
-								})}>
-								<option value="" disabled>
-									Select a role
+							defaultValue=""
+							error={errors.roleId?.message}
+							{...register("roleId", { required: "Role is required" })}
+						>
+							<option value="" disabled>
+								Select a role
+							</option>
+							{roles.map(role => (
+								<option key={role.id} value={role.id}>
+									{role.name}
 								</option>
-								{roles.map(role => (
-									<option key={role.id} value={role.id}>
-										{role.name}
-									</option>
-								))}
-							</Select>
-						</FormField>
+							))}
+						</SelectField>
 
-						<FormField id="baseSalary" label="Base salary">
-							<Input
-								id="baseSalary"
-								type="number"
-								step="0.01"
-								inputMode="decimal"
-								{...register("baseSalary")}
-							/>
-						</FormField>
+						<TextField
+							id="baseSalary"
+							label="Base salary"
+							type="number"
+							step="0.01"
+							inputMode="decimal"
+							{...register("baseSalary")}
+						/>
 
-						<FormField id="joinedAt" label="Joined at">
-							<Input id="joinedAt" type="date" {...register("joinedAt")} />
-						</FormField>
+						<TextField id="joinedAt" label="Joined at" type="date" {...register("joinedAt")} />
 					</div>
 
 					<div className="flex justify-end gap-2 pt-2">

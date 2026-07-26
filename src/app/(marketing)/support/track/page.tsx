@@ -4,8 +4,8 @@ import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Send, LifeBuoy } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { FormField } from "@/components/ui/FormField";
-import { Input, Textarea } from "@/components/ui/Input";
+import { TextField } from "@/components/ui/Field";
+import { Textarea } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
@@ -27,12 +27,23 @@ function LookupForm({ onLookup }: { onLookup: (id: string, token: string) => voi
 			}}
 			className="mx-auto max-w-md space-y-4"
 		>
-			<FormField label="Ticket ID" required>
-				<Input value={id} onChange={e => setId(e.target.value)} placeholder="e.g. 3f9a1c2b-..." />
-			</FormField>
-			<FormField label="Access token" required hint="From the link we gave you when you submitted the ticket.">
-				<Input value={token} onChange={e => setToken(e.target.value)} placeholder="Paste your access token" />
-			</FormField>
+			<TextField
+				id="ticket-id"
+				label="Ticket ID"
+				required
+				value={id}
+				onChange={e => setId(e.target.value)}
+				placeholder="e.g. 3f9a1c2b-..."
+			/>
+			<TextField
+				id="ticket-token"
+				label="Access token"
+				required
+				hint="From the link we gave you when you submitted the ticket."
+				value={token}
+				onChange={e => setToken(e.target.value)}
+				placeholder="Paste your access token"
+			/>
 			<Button type="submit" className="w-full">
 				View ticket
 			</Button>

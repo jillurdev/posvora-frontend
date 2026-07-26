@@ -8,8 +8,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { FormField } from "@/components/ui/FormField";
-import { Input, Select } from "@/components/ui/Input";
+import { TextField, SelectField } from "@/components/ui/Field";
 import { useShops, useCreateShop, useUpdateShop, useDeleteShop } from "@/features/shop/hooks/useShops";
 import type { Shop, ShopPayload } from "@/features/shop/types";
 import { CURRENCIES } from "@/lib/currencies";
@@ -105,39 +104,28 @@ export default function ShopsPage() {
 
 			<Modal open={modalOpen} onClose={() => { setModalOpen(false); setEditing(null); }} title={editing ? "Edit shop" : "Add shop"}>
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<FormField label="Name" required>
-						<Input {...register("name", { required: true })} />
-					</FormField>
+					<TextField id="shop-name" label="Name" required {...register("name", { required: true })} />
 					{editing && (
-						<FormField
+						<TextField
+							id="shop-slug"
 							label="Public handle"
 							hint="Letters, numbers and hyphens only — this is the shop's public link."
-						>
-							<Input placeholder="my-shop" {...register("slug")} />
-						</FormField>
+							placeholder="my-shop"
+							{...register("slug")}
+						/>
 					)}
-					<FormField label="Address">
-						<Input {...register("address")} />
-					</FormField>
+					<TextField id="shop-address" label="Address" {...register("address")} />
 					<div className="grid grid-cols-2 gap-4">
-						<FormField label="BIN">
-							<Input {...register("bin")} />
-						</FormField>
-						<FormField label="VAT number">
-							<Input {...register("vatNumber")} />
-						</FormField>
+						<TextField id="shop-bin" label="BIN" {...register("bin")} />
+						<TextField id="shop-vat" label="VAT number" {...register("vatNumber")} />
 					</div>
 					<div className="grid grid-cols-2 gap-4">
-						<FormField label="Currency">
-							<Select defaultValue="BDT" {...register("currency")}>
-								{CURRENCIES.map(c => (
-									<option key={c.code} value={c.code}>{c.label}</option>
-								))}
-							</Select>
-						</FormField>
-						<FormField label="Timezone">
-							<Input placeholder="Asia/Dhaka" {...register("timezone")} />
-						</FormField>
+						<SelectField id="shop-currency" label="Currency" defaultValue="BDT" {...register("currency")}>
+							{CURRENCIES.map(c => (
+								<option key={c.code} value={c.code}>{c.label}</option>
+							))}
+						</SelectField>
+						<TextField id="shop-timezone" label="Timezone" placeholder="Asia/Dhaka" {...register("timezone")} />
 					</div>
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="outline" onClick={() => { setModalOpen(false); setEditing(null); }}>Cancel</Button>

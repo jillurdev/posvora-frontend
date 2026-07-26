@@ -5,8 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
-import { FormField } from "@/components/ui/FormField";
-import { Input } from "@/components/ui/Input";
+import { TextField } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
 import { useUpdateProfile } from "@/features/user/hooks/useProfile";
@@ -49,12 +48,8 @@ export default function SettingsPage() {
 					onSubmit={profileForm.handleSubmit(values => updateProfile.mutate(values))}
 					className="space-y-4"
 				>
-					<FormField label="Name">
-						<Input {...profileForm.register("name")} />
-					</FormField>
-					<FormField label="Phone">
-						<Input {...profileForm.register("phone")} />
-					</FormField>
+					<TextField id="profile-name" label="Name" {...profileForm.register("name")} />
+					<TextField id="profile-phone" label="Phone" {...profileForm.register("phone")} />
 					<Button type="submit" isLoading={updateProfile.isPending}>Save profile</Button>
 				</form>
 			</section>
@@ -81,24 +76,17 @@ export default function SettingsPage() {
 						onSubmit={orgForm.handleSubmit(values => updateOrganization.mutate(values))}
 						className="space-y-4"
 					>
-						<FormField label="Business name">
-							<Input {...orgForm.register("name")} />
-						</FormField>
-						<FormField
+						<TextField id="org-name" label="Business name" {...orgForm.register("name")} />
+						<TextField
+							id="org-handle"
 							label="Handle (public URL)"
 							hint="Letters, numbers and hyphens only. This becomes your public link, e.g. posvora.com/shop/your-handle."
-						>
-							<Input placeholder="your-business" {...orgForm.register("handle")} />
-						</FormField>
-						<FormField label="Email">
-							<Input type="email" {...orgForm.register("email")} />
-						</FormField>
-						<FormField label="Phone">
-							<Input {...orgForm.register("phone")} />
-						</FormField>
-						<FormField label="Address">
-							<Input {...orgForm.register("address")} />
-						</FormField>
+							placeholder="your-business"
+							{...orgForm.register("handle")}
+						/>
+						<TextField id="org-email" label="Email" type="email" {...orgForm.register("email")} />
+						<TextField id="org-phone" label="Phone" {...orgForm.register("phone")} />
+						<TextField id="org-address" label="Address" {...orgForm.register("address")} />
 						{isOwner && (
 							<Button type="submit" isLoading={updateOrganization.isPending}>Save organization</Button>
 						)}
@@ -117,15 +105,27 @@ export default function SettingsPage() {
 					)}
 					className="space-y-4"
 				>
-					<FormField label="Current password" error={passwordForm.formState.errors.oldPassword?.message}>
-						<Input type="password" {...passwordForm.register("oldPassword")} />
-					</FormField>
-					<FormField label="New password" error={passwordForm.formState.errors.newPassword?.message}>
-						<Input type="password" {...passwordForm.register("newPassword")} />
-					</FormField>
-					<FormField label="Confirm new password" error={passwordForm.formState.errors.confirmPassword?.message}>
-						<Input type="password" {...passwordForm.register("confirmPassword")} />
-					</FormField>
+					<TextField
+						id="current-password"
+						label="Current password"
+						type="password"
+						error={passwordForm.formState.errors.oldPassword?.message}
+						{...passwordForm.register("oldPassword")}
+					/>
+					<TextField
+						id="new-password"
+						label="New password"
+						type="password"
+						error={passwordForm.formState.errors.newPassword?.message}
+						{...passwordForm.register("newPassword")}
+					/>
+					<TextField
+						id="confirm-password"
+						label="Confirm new password"
+						type="password"
+						error={passwordForm.formState.errors.confirmPassword?.message}
+						{...passwordForm.register("confirmPassword")}
+					/>
 					<Button type="submit" isLoading={changePassword.isPending}>Update password</Button>
 				</form>
 			</section>

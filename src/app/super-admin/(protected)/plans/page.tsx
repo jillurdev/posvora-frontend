@@ -6,8 +6,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { FormField } from "@/components/ui/FormField";
-import { Input, Select, Textarea } from "@/components/ui/Input";
+import { TextField, SelectField, TextareaField } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import {
 	useAdminCreatePlan,
@@ -142,72 +141,77 @@ export default function PlansPage() {
 
 			<Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingPlan ? "Edit plan" : "Create plan"}>
 				<div className="space-y-4">
-					<FormField label="Plan name" required>
-						<Input value={form.name} onChange={e => handleNameChange(e.target.value)} />
-					</FormField>
-					<FormField label="Slug" required hint="Used internally as a unique identifier">
-						<Input value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} />
-					</FormField>
-					<FormField label="Description">
-						<Textarea
-							rows={2}
-							value={form.description}
-							onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+					<TextField id="plan-name" label="Plan name" required value={form.name} onChange={e => handleNameChange(e.target.value)} />
+					<TextField
+						id="plan-slug"
+						label="Slug"
+						required
+						hint="Used internally as a unique identifier"
+						value={form.slug}
+						onChange={e => setForm(f => ({ ...f, slug: e.target.value }))}
+					/>
+					<TextareaField
+						id="plan-description"
+						label="Description"
+						rows={2}
+						value={form.description}
+						onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+					/>
+					<div className="grid grid-cols-2 gap-4">
+						<TextField
+							id="plan-price"
+							label="Price (৳)"
+							required
+							type="number"
+							min={0}
+							value={form.price}
+							onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
 						/>
-					</FormField>
-					<div className="grid grid-cols-2 gap-4">
-						<FormField label="Price (৳)" required>
-							<Input
-								type="number"
-								min={0}
-								value={form.price}
-								onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
-							/>
-						</FormField>
-						<FormField label="Billing cycle" required>
-							<Select
-								value={form.billingCycle}
-								onChange={e => setForm(f => ({ ...f, billingCycle: e.target.value as CreatePlanPayload["billingCycle"] }))}>
-								<option value="MONTHLY">Monthly</option>
-								<option value="YEARLY">Yearly</option>
-							</Select>
-						</FormField>
+						<SelectField
+							id="plan-billing-cycle"
+							label="Billing cycle"
+							required
+							value={form.billingCycle}
+							onChange={e => setForm(f => ({ ...f, billingCycle: e.target.value as CreatePlanPayload["billingCycle"] }))}>
+							<option value="MONTHLY">Monthly</option>
+							<option value="YEARLY">Yearly</option>
+						</SelectField>
 					</div>
 					<div className="grid grid-cols-2 gap-4">
-						<FormField label="Trial days">
-							<Input
-								type="number"
-								min={0}
-								value={form.trialDays}
-								onChange={e => setForm(f => ({ ...f, trialDays: Number(e.target.value) }))}
-							/>
-						</FormField>
-						<FormField label="Branch limit">
-							<Input
-								type="number"
-								min={1}
-								value={form.branchLimit}
-								onChange={e => setForm(f => ({ ...f, branchLimit: Number(e.target.value) }))}
-							/>
-						</FormField>
+						<TextField
+							id="plan-trial-days"
+							label="Trial days"
+							type="number"
+							min={0}
+							value={form.trialDays}
+							onChange={e => setForm(f => ({ ...f, trialDays: Number(e.target.value) }))}
+						/>
+						<TextField
+							id="plan-branch-limit"
+							label="Branch limit"
+							type="number"
+							min={1}
+							value={form.branchLimit}
+							onChange={e => setForm(f => ({ ...f, branchLimit: Number(e.target.value) }))}
+						/>
 					</div>
 					<div className="grid grid-cols-2 gap-4">
-						<FormField label="User limit">
-							<Input
-								type="number"
-								min={1}
-								value={form.userLimit}
-								onChange={e => setForm(f => ({ ...f, userLimit: Number(e.target.value) }))}
-							/>
-						</FormField>
-						<FormField label="Storage limit (MB)">
-							<Input
-								type="number"
-								min={1}
-								value={form.storageLimitMb}
-								onChange={e => setForm(f => ({ ...f, storageLimitMb: Number(e.target.value) }))}
-							/>
-						</FormField>
+						<TextField
+							id="plan-user-limit"
+							label="User limit"
+							type="number"
+							min={1}
+							value={form.userLimit}
+							onChange={e => setForm(f => ({ ...f, userLimit: Number(e.target.value) }))}
+						/>
+						<TextField
+							id="plan-storage-limit"
+							label="Storage limit (MB)"
+							type="number"
+							min={1}
+							value={form.storageLimitMb}
+							onChange={e => setForm(f => ({ ...f, storageLimitMb: Number(e.target.value) }))}
+						/>
 					</div>
 					<label className="flex items-center gap-2 text-sm text-slate-700">
 						<input

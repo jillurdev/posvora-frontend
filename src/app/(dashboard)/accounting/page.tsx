@@ -6,8 +6,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { FormField } from "@/components/ui/FormField";
-import { Input, Select } from "@/components/ui/Input";
+import { TextField, SelectField } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useActiveShop } from "@/context/ActiveShopContext";
 import { useBranches } from "@/features/branch/hooks/useBranches";
@@ -73,20 +72,22 @@ export default function AccountingPage() {
 
 			<Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Record expense">
 				<div className="space-y-4">
-					<FormField label="Category" required>
-						<Select value={categoryId} onChange={e => setCategoryId(e.target.value)}>
-							<option value="" disabled>Select category</option>
-							{categories.map(c => (
-								<option key={c.id} value={c.id}>{c.name}</option>
-							))}
-						</Select>
-					</FormField>
-					<FormField label="Amount" required>
-						<Input type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} />
-					</FormField>
-					<FormField label="Note">
-						<Input value={note} onChange={e => setNote(e.target.value)} />
-					</FormField>
+					<SelectField id="expense-category" label="Category" required value={categoryId} onChange={e => setCategoryId(e.target.value)}>
+						<option value="" disabled>Select category</option>
+						{categories.map(c => (
+							<option key={c.id} value={c.id}>{c.name}</option>
+						))}
+					</SelectField>
+					<TextField
+						id="expense-amount"
+						label="Amount"
+						required
+						type="number"
+						step="0.01"
+						value={amount}
+						onChange={e => setAmount(e.target.value)}
+					/>
+					<TextField id="expense-note" label="Note" value={note} onChange={e => setNote(e.target.value)} />
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
 						<Button onClick={handleSubmit} isLoading={createExpense.isPending} disabled={!categoryId || !amount}>Save</Button>

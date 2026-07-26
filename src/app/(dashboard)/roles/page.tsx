@@ -7,7 +7,7 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { FormField } from "@/components/ui/FormField";
-import { Input } from "@/components/ui/Input";
+import { TextField } from "@/components/ui/Field";
 import { Badge } from "@/components/ui/Badge";
 import {
 	useRoles,
@@ -113,14 +113,15 @@ export default function RolesPage() {
 
 			<Modal open={modalOpen} onClose={closeModal} title={editingRole ? `Edit ${editingRole.name}` : "Add role"} size="lg">
 				<div className="space-y-4">
-					<FormField label="Role name" required>
-						<Input
-							value={name}
-							onChange={e => setName(e.target.value)}
-							placeholder="e.g. Floor Supervisor"
-							disabled={!!editingRole?.systemRole && editingRole.systemRole !== "CUSTOM"}
-						/>
-					</FormField>
+					<TextField
+						id="role-name"
+						label="Role name"
+						required
+						value={name}
+						onChange={e => setName(e.target.value)}
+						placeholder="e.g. Floor Supervisor"
+						disabled={!!editingRole?.systemRole && editingRole.systemRole !== "CUSTOM"}
+					/>
 					<FormField label="Permissions">
 						<div className="grid max-h-64 grid-cols-1 gap-2 overflow-y-auto rounded-lg border border-slate-200 p-3 sm:grid-cols-2">
 							{permissions.map(p => (

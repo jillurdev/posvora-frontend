@@ -4,8 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, CheckCircle2 } from "lucide-react";
-import { FormField } from "@/components/ui/FormField";
-import { Input } from "@/components/ui/Input";
+import { TextField } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 import { useAdminResetPassword } from "@/features/admin-auth/hooks/useAdminForgotPassword";
@@ -63,24 +62,27 @@ function AdminResetPasswordInner() {
 							<h1 className="mt-4 text-lg font-semibold text-white">Set a new password</h1>
 						</div>
 						<form onSubmit={handleSubmit} className="mt-8 space-y-4">
-							<FormField label="New password" required className="[&_label]:text-slate-300">
-								<Input
-									type="password"
-									value={newPassword}
-									onChange={e => setNewPassword(e.target.value)}
-									required
-									className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
-								/>
-							</FormField>
-							<FormField label="Confirm new password" required error={error} className="[&_label]:text-slate-300">
-								<Input
-									type="password"
-									value={confirmPassword}
-									onChange={e => setConfirmPassword(e.target.value)}
-									required
-									className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
-								/>
-							</FormField>
+							<TextField
+								id="admin-new-password"
+								label="New password"
+								required
+								wrapperClassName="[&_label]:text-slate-300"
+								type="password"
+								value={newPassword}
+								onChange={e => setNewPassword(e.target.value)}
+								className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
+							/>
+							<TextField
+								id="admin-confirm-password"
+								label="Confirm new password"
+								required
+								error={error}
+								wrapperClassName="[&_label]:text-slate-300"
+								type="password"
+								value={confirmPassword}
+								onChange={e => setConfirmPassword(e.target.value)}
+								className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
+							/>
 							<Button type="submit" className="w-full" isLoading={isPending}>
 								Reset password
 							</Button>

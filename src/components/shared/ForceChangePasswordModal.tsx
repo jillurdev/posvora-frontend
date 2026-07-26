@@ -4,8 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ShieldAlert } from "lucide-react";
 
-import { FormField } from "@/components/ui/FormField";
-import { Input } from "@/components/ui/Input";
+import { TextField } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
 import { useChangePassword } from "@/features/auth/hooks/useChangePassword";
@@ -55,15 +54,30 @@ export function ForceChangePasswordModal() {
 				</div>
 
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<FormField label="Temporary password" error={errors.oldPassword?.message}>
-						<Input type="password" autoComplete="current-password" {...register("oldPassword")} />
-					</FormField>
-					<FormField label="New password" error={errors.newPassword?.message}>
-						<Input type="password" autoComplete="new-password" {...register("newPassword")} />
-					</FormField>
-					<FormField label="Confirm new password" error={errors.confirmPassword?.message}>
-						<Input type="password" autoComplete="new-password" {...register("confirmPassword")} />
-					</FormField>
+					<TextField
+						id="temp-password"
+						label="Temporary password"
+						type="password"
+						autoComplete="current-password"
+						error={errors.oldPassword?.message}
+						{...register("oldPassword")}
+					/>
+					<TextField
+						id="new-password"
+						label="New password"
+						type="password"
+						autoComplete="new-password"
+						error={errors.newPassword?.message}
+						{...register("newPassword")}
+					/>
+					<TextField
+						id="confirm-password"
+						label="Confirm new password"
+						type="password"
+						autoComplete="new-password"
+						error={errors.confirmPassword?.message}
+						{...register("confirmPassword")}
+					/>
 
 					<Button type="submit" isLoading={changePassword.isPending} className="w-full">
 						Set password &amp; continue

@@ -6,8 +6,13 @@ import { Store, MapPin } from "lucide-react";
 import { shopApi } from "@/features/shop/api";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
- 
 
+/**
+ * Public, unauthenticated storefront profile — the first slice of the
+ * "posvora.com/<handle>" public-view concept: anyone (logged out) can
+ * open this page for any active shop, while the full management
+ * dashboard for that shop still requires the owner/staff to sign in.
+ */
 export default function PublicShopPage() {
 	const params = useParams<{ slug: string }>();
 	const { data: shop, isLoading, isError } = useQuery({

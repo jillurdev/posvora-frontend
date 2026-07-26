@@ -6,8 +6,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { FormField } from "@/components/ui/FormField";
-import { Input, Select } from "@/components/ui/Input";
+import { TextField, SelectField } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useAdminCreateStaff, useAdminStaff, useAdminToggleStaff } from "@/features/super-admin/hooks/useSuperAdmin";
@@ -111,33 +110,46 @@ export default function PlatformStaffPage() {
 
 			<Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add platform staff member">
 				<div className="space-y-4">
-					<FormField label="Full name" required>
-						<Input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-					</FormField>
-					<FormField label="Email" required>
-						<Input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-					</FormField>
-					<FormField label="Phone">
-						<Input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
-					</FormField>
-					<FormField
+					<TextField
+						id="staff-name"
+						label="Full name"
+						required
+						value={form.name}
+						onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+					/>
+					<TextField
+						id="staff-email"
+						label="Email"
+						required
+						type="email"
+						value={form.email}
+						onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+					/>
+					<TextField
+						id="staff-phone"
+						label="Phone"
+						value={form.phone}
+						onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+					/>
+					<SelectField
+						id="staff-role"
 						label="Role"
 						required
-						hint="Admin can manage organizations, plans and subscriptions. Support can only handle support tickets.">
-						<Select
-							value={form.role}
-							onChange={e => setForm(f => ({ ...f, role: e.target.value as CreatePlatformAdminPayload["role"] }))}>
-							<option value="SUPPORT">Support</option>
-							<option value="ADMIN">Admin</option>
-						</Select>
-					</FormField>
-					<FormField label="Temporary password" required hint="At least 8 characters. They can change it after logging in.">
-						<Input
-							type="password"
-							value={form.password}
-							onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-						/>
-					</FormField>
+						hint="Admin can manage organizations, plans and subscriptions. Support can only handle support tickets."
+						value={form.role}
+						onChange={e => setForm(f => ({ ...f, role: e.target.value as CreatePlatformAdminPayload["role"] }))}>
+						<option value="SUPPORT">Support</option>
+						<option value="ADMIN">Admin</option>
+					</SelectField>
+					<TextField
+						id="staff-password"
+						label="Temporary password"
+						required
+						hint="At least 8 characters. They can change it after logging in."
+						type="password"
+						value={form.password}
+						onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+					/>
 					<Button className="w-full" isLoading={createStaff.isPending} onClick={handleSubmit}>
 						Create account
 					</Button>

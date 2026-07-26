@@ -3,8 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ShieldCheck, MailCheck } from "lucide-react";
-import { FormField } from "@/components/ui/FormField";
-import { Input } from "@/components/ui/Input";
+import { TextField } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { useAdminForgotPassword } from "@/features/admin-auth/hooks/useAdminForgotPassword";
 
@@ -41,16 +40,17 @@ export default function AdminForgotPasswordPage() {
 
 				{!submitted && (
 					<form onSubmit={handleSubmit} className="mt-8 space-y-4">
-						<FormField label="Email" required className="[&_label]:text-slate-300">
-							<Input
-								type="email"
-								value={email}
-								onChange={e => setEmail(e.target.value)}
-								required
-								autoComplete="username"
-								className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
-							/>
-						</FormField>
+						<TextField
+							id="admin-email"
+							label="Email"
+							required
+							wrapperClassName="[&_label]:text-slate-300"
+							type="email"
+							value={email}
+							onChange={e => setEmail(e.target.value)}
+							autoComplete="username"
+							className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
+						/>
 						<Button type="submit" className="w-full" isLoading={isPending}>
 							Send reset link
 						</Button>

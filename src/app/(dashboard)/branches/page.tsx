@@ -7,8 +7,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { FormField } from "@/components/ui/FormField";
-import { Input, Select } from "@/components/ui/Input";
+import { TextField, SelectField } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useShops } from "@/features/shop/hooks/useShops";
 import { useBranches, useCreateBranch, useDeleteBranch } from "@/features/branch/hooks/useBranches";
@@ -60,26 +59,16 @@ export default function BranchesPage() {
 
 			<Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add branch">
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<FormField label="Shop" required>
-						<Select {...register("shopId", { required: true })} defaultValue="">
-							<option value="" disabled>Select shop</option>
-							{shops.map(s => (
-								<option key={s.id} value={s.id}>{s.name}</option>
-							))}
-						</Select>
-					</FormField>
-					<FormField label="Branch name" required>
-						<Input {...register("name", { required: true })} />
-					</FormField>
-					<FormField label="Code">
-						<Input {...register("code")} />
-					</FormField>
-					<FormField label="Address">
-						<Input {...register("address")} />
-					</FormField>
-					<FormField label="Phone">
-						<Input {...register("phone")} />
-					</FormField>
+					<SelectField id="branch-shop" label="Shop" required {...register("shopId", { required: true })} defaultValue="">
+						<option value="" disabled>Select shop</option>
+						{shops.map(s => (
+							<option key={s.id} value={s.id}>{s.name}</option>
+						))}
+					</SelectField>
+					<TextField id="branch-name" label="Branch name" required {...register("name", { required: true })} />
+					<TextField id="branch-code" label="Code" {...register("code")} />
+					<TextField id="branch-address" label="Address" {...register("address")} />
+					<TextField id="branch-phone" label="Phone" {...register("phone")} />
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
 						<Button type="submit" isLoading={createBranch.isPending}>Save</Button>

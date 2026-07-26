@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
-import { FormField } from "@/components/ui/FormField";
-import { Input, Textarea } from "@/components/ui/Input";
+import { TextField, TextareaField } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 import { supportApi } from "@/features/support/api";
@@ -98,19 +97,18 @@ export default function ContactPage() {
 					) : (
 						<form onSubmit={handleSubmit} className="space-y-4">
 							<div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-								<FormField label="Your name" required>
-									<Input name="name" required placeholder="Jane Doe" />
-								</FormField>
-								<FormField label="Email" required>
-									<Input name="email" type="email" required placeholder="you@company.com" />
-								</FormField>
+								<TextField id="contact-name" label="Your name" name="name" required placeholder="Jane Doe" />
+								<TextField id="contact-email" label="Email" name="email" type="email" required placeholder="you@company.com" />
 							</div>
-							<FormField label="Business name">
-								<Input name="business" placeholder="Your business (optional)" />
-							</FormField>
-							<FormField label="Message" required>
-								<Textarea name="message" rows={5} required placeholder="Tell us what you need..." />
-							</FormField>
+							<TextField id="contact-business" label="Business name" name="business" placeholder="Your business (optional)" />
+							<TextareaField
+								id="contact-message"
+								label="Message"
+								name="message"
+								rows={5}
+								required
+								placeholder="Tell us what you need..."
+							/>
 							<Button type="submit" isLoading={submitting}>
 								<Send className="h-4 w-4" /> Send message
 							</Button>

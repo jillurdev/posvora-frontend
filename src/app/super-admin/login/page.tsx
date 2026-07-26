@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
-import { FormField } from "@/components/ui/FormField";
-import { Input } from "@/components/ui/Input";
+import { TextField } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { useAdminLogin } from "@/features/admin-auth/hooks/useAdminAuth";
@@ -46,34 +45,30 @@ export default function SuperAdminLoginPage() {
 				</div>
 
 				<form onSubmit={handleSubmit} className="mt-8 space-y-4">
-					<FormField
+					<TextField
+						id="admin-login-email"
 						label="Email"
 						required
-						className="[&_label]:text-slate-300">
-						<Input
-							type="email"
-							value={email}
-							onChange={e => setEmail(e.target.value)}
-							placeholder="Enter your email"
-							required
-							autoComplete="username"
-							className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
-						/>
-					</FormField>
-					<FormField
+						wrapperClassName="[&_label]:text-slate-300"
+						type="email"
+						value={email}
+						onChange={e => setEmail(e.target.value)}
+						placeholder="Enter your email"
+						autoComplete="username"
+						className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
+					/>
+					<TextField
+						id="admin-login-password"
 						label="Password"
 						required
-						className="[&_label]:text-slate-300">
-						<Input
-							type="password"
-							value={password}
-							onChange={e => setPassword(e.target.value)}
-							placeholder="xxxxxx"
-							required
-							autoComplete="current-password"
-							className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
-						/>
-					</FormField>
+						wrapperClassName="[&_label]:text-slate-300"
+						type="password"
+						value={password}
+						onChange={e => setPassword(e.target.value)}
+						placeholder="xxxxxx"
+						autoComplete="current-password"
+						className="border-slate-700 bg-slate-800 text-white placeholder:text-slate-500"
+					/>
 					<div className="flex justify-end">
 						<Link
 							href="/super-admin/forgot-password"

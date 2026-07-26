@@ -9,8 +9,7 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { Pagination } from "@/components/common/Pagination";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
-import { FormField } from "@/components/ui/FormField";
-import { Input } from "@/components/ui/Input";
+import { TextField } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useActiveShop } from "@/context/ActiveShopContext";
 import { usePagination } from "@/hooks/usePagination";
@@ -71,18 +70,10 @@ export default function SuppliersPage() {
 
 			<Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add supplier">
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<FormField label="Name" required>
-						<Input {...register("name", { required: true })} />
-					</FormField>
-					<FormField label="Phone">
-						<Input {...register("phone")} />
-					</FormField>
-					<FormField label="Email">
-						<Input type="email" {...register("email")} />
-					</FormField>
-					<FormField label="Address">
-						<Input {...register("address")} />
-					</FormField>
+					<TextField id="supplier-name" label="Name" required {...register("name", { required: true })} />
+					<TextField id="supplier-phone" label="Phone" {...register("phone")} />
+					<TextField id="supplier-email" label="Email" type="email" {...register("email")} />
+					<TextField id="supplier-address" label="Address" {...register("address")} />
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="outline" onClick={() => setModalOpen(false)}>Cancel</Button>
 						<Button type="submit" isLoading={createSupplier.isPending}>Save</Button>
