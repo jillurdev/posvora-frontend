@@ -22,7 +22,9 @@ export function RegisterForm() {
 	} = useForm<RegisterFormValues>({ resolver: zodResolver(registerSchema) });
 
 	const onSubmit = (values: RegisterFormValues) => {
-		mutate(values, { onSuccess: () => router.replace("/dashboard") });
+		mutate(values, {
+			onSuccess: result => router.replace(`/${result.organization?.handle ?? ""}/dashboard`),
+		});
 	};
 
 	return (

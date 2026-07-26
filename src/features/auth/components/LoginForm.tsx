@@ -26,7 +26,7 @@ export function LoginForm() {
 				password: values.password,
 			},
 			{
-				onSuccess: () => router.replace("/dashboard"),
+				onSuccess: result => router.replace(`/${result.user.organization?.handle ?? ""}/dashboard`),
 			},
 		);
 	};

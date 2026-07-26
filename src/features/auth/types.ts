@@ -30,6 +30,7 @@ export interface ResetPasswordPayload {
 
 export interface AuthResult {
 	user: AuthUser;
+	organization?: { id: string; name: string; handle: string | null };
 	accessToken?: string;
 	refreshToken?: string;
 }

@@ -14,29 +14,32 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// Only these route prefixes require a signed-in user. Any other route (marketing pages,
-// /login, /register) must never be force-redirected just because a background "am I logged
-// in?" check came back unauthenticated.
-const PROTECTED_PREFIXES = [
-	"/dashboard",
-	"/products",
-	"/inventory",
-	"/sales",
-	"/purchases",
-	"/customers",
-	"/suppliers",
-	"/employees",
-	"/accounting",
-	"/shops",
-	"/branches",
-	"/warehouses",
-	"/roles",
-	"/subscription",
-	"/audit-logs",
-	"/notifications",
-	"/settings",
-	"/support",
-];
+// Dashboard routes are now org-scoped: /<orgHandle>/dashboard, /<orgHandle>/products, etc.
+// Rather than hardcoding every dashboard section (which would need updating every time a
+// new one is added), treat any first path segment that ISN'T a known public route as an
+// org handle — and therefore protected. Marketing pages, auth pages, and the super-admin
+// area must never be force-redirected just because a background "am I logged in?" check
+// came back unauthenticated.
+const PUBLIC_TOP_SEGMENTS = new Set([
+	"",
+	"login",
+	"register",
+	"forgot-password",
+	"reset-password",
+	"about",
+	"contact",
+	"pricing",
+	"privacy",
+	"terms",
+	"shop",
+	"support",
+	"super-admin",
+]);
+
+function isProtectedPath(pathname: string): boolean {
+	const firstSegment = pathname.split("/").filter(Boolean)[0] ?? "";
+	return !PUBLIC_TOP_SEGMENTS.has(firstSegment);
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<AuthUser | null>(null);
@@ -65,8 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		const handleLogout = () => {
 			setUser(null);
 			const currentPath = pathnameRef.current ?? "";
-			const isProtected = PROTECTED_PREFIXES.some(prefix => currentPath.startsWith(prefix));
-			if (isProtected) router.replace("/login");
+			if (isProtectedPath(currentPath)) router.replace("/login");
 		};
 		window.addEventListener("auth:logout", handleLogout);
 		return () => window.removeEventListener("auth:logout", handleLogout);

@@ -38,7 +38,7 @@ export function PublicNavbar() {
 
 				<div className="hidden items-center gap-3 md:flex">
 					{!isLoading && user ? (
-						<Link href="/dashboard">
+						<Link href={`/${user.organization?.handle ?? ""}/dashboard`}>
 							<Button size="sm">Go to dashboard</Button>
 						</Link>
 					) : (
@@ -68,7 +68,7 @@ export function PublicNavbar() {
 						))}
 						<hr className="my-2 border-slate-100" />
 						{!isLoading && user ? (
-							<Link href="/dashboard" onClick={() => setOpen(false)}>
+							<Link href={`/${user.organization?.handle ?? ""}/dashboard`} onClick={() => setOpen(false)}>
 								<Button className="w-full">Go to dashboard</Button>
 							</Link>
 						) : (

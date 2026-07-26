@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 import { Store } from "lucide-react";
 import { NAV_ITEMS, siteConfig } from "@/config/site";
 import { useAuth } from "@/context/AuthContext";
+import { useOrgHandle } from "@/hooks/useOrgHandle";
 import { hasRole } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
 
 export function Sidebar({ forceVisible = false }: { forceVisible?: boolean }) {
 	const pathname = usePathname();
 	const { user } = useAuth();
+	const orgHandle = useOrgHandle();
 
 	return (
 		<aside
@@ -27,12 +29,13 @@ export function Sidebar({ forceVisible = false }: { forceVisible?: boolean }) {
 			</div>
 			<nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
 				{NAV_ITEMS.filter(item => hasRole(user?.roles, item.roles)).map(item => {
-					const active = pathname === item.href || pathname.startsWith(item.href + "/");
+					const href = `/${orgHandle}/${item.href}`;
+					const active = pathname === href || pathname.startsWith(href + "/");
 					const Icon = item.icon;
 					return (
 						<Link
 							key={item.href}
-							href={item.href}
+							href={href}
 							className={cn(
 								"flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
 								active ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100",
