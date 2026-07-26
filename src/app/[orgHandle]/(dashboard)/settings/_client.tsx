@@ -12,6 +12,7 @@ import { useUpdateProfile } from "@/features/user/hooks/useProfile";
 import { useOrganization, useUpdateOrganization } from "@/features/organization/hooks/useOrganization";
 import { useChangePassword } from "@/features/auth/hooks/useChangePassword";
 import { changePasswordSchema, ChangePasswordFormValues } from "@/features/auth/schema";
+import { TwoFactorSection } from "@/features/auth/components/TwoFactorSection";
 import type { UpdateOrganizationPayload } from "@/features/organization/types";
 
 export default function SettingsPage() {
@@ -129,6 +130,8 @@ export default function SettingsPage() {
 					<Button type="submit" isLoading={changePassword.isPending}>Update password</Button>
 				</form>
 			</section>
+
+			<TwoFactorSection />
 		</div>
 	);
 }

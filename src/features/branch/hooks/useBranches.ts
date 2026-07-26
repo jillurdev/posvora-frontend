@@ -21,6 +21,24 @@ export function useCreateBranch() {
 	});
 }
 
+export function useUpdateBranch() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({
+			id,
+			payload,
+		}: {
+			id: string;
+			payload: Partial<BranchPayload>;
+		}) => branchApi.update(id, payload),
+		onSuccess: () => {
+			toast.success("Branch updated");
+			qc.invalidateQueries({ queryKey: ["branches"] });
+		},
+		onError: (err: Error) => toast.error(err.message),
+	});
+}
+
 export function useDeleteBranch() {
 	const qc = useQueryClient();
 	return useMutation({

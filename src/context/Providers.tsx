@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, ReactNode } from "react";
 import { Toaster } from "sonner";
 import { AuthProvider } from "./AuthContext";
+import { ConfirmDialogProvider } from "./ConfirmDialogContext";
 
 export function Providers({ children }: { children: ReactNode }) {
 	const [queryClient] = useState(
@@ -18,8 +19,10 @@ export function Providers({ children }: { children: ReactNode }) {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<AuthProvider>
-				{children}
-				<Toaster richColors position="top-right" />
+				<ConfirmDialogProvider>
+					{children}
+					<Toaster richColors position="top-right" />
+				</ConfirmDialogProvider>
 			</AuthProvider>
 		</QueryClientProvider>
 	);

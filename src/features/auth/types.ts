@@ -34,3 +34,29 @@ export interface AuthResult {
 	accessToken?: string;
 	refreshToken?: string;
 }
+
+export interface TwoFactorChallenge {
+	twoFactorRequired: true;
+	challengeToken: string;
+}
+
+export type LoginResult = AuthResult | TwoFactorChallenge;
+
+export function isTwoFactorChallenge(result: LoginResult): result is TwoFactorChallenge {
+	return "twoFactorRequired" in result && result.twoFactorRequired === true;
+}
+
+export interface VerifyTwoFactorPayload {
+	challengeToken: string;
+	code: string;
+}
+
+export interface TwoFactorSetup {
+	secret: string;
+	otpauthUrl: string;
+}
+
+export interface EnableTwoFactorResult {
+	message: string;
+	recoveryCodes: string[];
+}

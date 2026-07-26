@@ -11,4 +11,5 @@ export interface AuthUser {
 	organization?: { id: string; name: string; handle: string | null } | null;
 	roles: SystemRole[];
 	mustChangePassword?: boolean;
+	twoFactorEnabled?: boolean;
 }
