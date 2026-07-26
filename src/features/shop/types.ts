@@ -1,6 +1,7 @@
 export interface Shop {
 	id: string;
 	name: string;
+	slug?: string;
 	address?: string | null;
 	bin?: string | null;
 	vatNumber?: string | null;
@@ -16,4 +17,5 @@ export interface ShopPayload {
 	vatNumber?: string;
 	currency?: string;
 	timezone?: string;
+	slug?: string;
 }

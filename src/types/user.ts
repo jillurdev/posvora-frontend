@@ -9,4 +9,5 @@ export interface AuthUser {
 	status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING";
 	organizationId: string | null;
 	roles: SystemRole[];
+	mustChangePassword?: boolean;
 }

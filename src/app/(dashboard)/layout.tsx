@@ -7,6 +7,7 @@ import { ActiveShopProvider } from "@/context/ActiveShopContext";
 import { Sidebar } from "@/components/shared/Sidebar";
 import { Topbar } from "@/components/shared/Topbar";
 import { MobileSidebar } from "@/components/shared/MobileSidebar";
+import { ForceChangePasswordModal } from "@/components/shared/ForceChangePasswordModal";
 import { Spinner } from "@/components/ui/Spinner";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -24,6 +25,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 				<Spinner />
 			</div>
 		);
+	}
+
+	if (user.mustChangePassword) {
+		return <ForceChangePasswordModal />;
 	}
 
 	return (

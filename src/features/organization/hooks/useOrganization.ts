@@ -9,6 +9,10 @@ export function useOrganization() {
 	return useQuery({ queryKey: ["organization", "me"], queryFn: organizationApi.me });
 }
 
+export function useDashboardSummary() {
+	return useQuery({ queryKey: ["organization", "summary"], queryFn: organizationApi.summary });
+}
+
 export function useUpdateOrganization() {
 	const queryClient = useQueryClient();
 	return useMutation({

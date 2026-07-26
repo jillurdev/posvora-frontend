@@ -176,7 +176,8 @@ export default function EmployeesPage() {
 
 						<FormField
 							id="password"
-							label="Password"
+							label="Temporary password"
+							hint="The employee will be required to set their own password the first time they log in."
 							required
 							error={errors.password?.message}>
 							<Input

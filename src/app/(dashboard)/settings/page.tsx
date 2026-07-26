@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Lock } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { FormField } from "@/components/ui/FormField";
 import { Input } from "@/components/ui/Input";
@@ -12,20 +13,30 @@ import { useUpdateProfile } from "@/features/user/hooks/useProfile";
 import { useOrganization, useUpdateOrganization } from "@/features/organization/hooks/useOrganization";
 import { useChangePassword } from "@/features/auth/hooks/useChangePassword";
 import { changePasswordSchema, ChangePasswordFormValues } from "@/features/auth/schema";
+import type { UpdateOrganizationPayload } from "@/features/organization/types";
 
 export default function SettingsPage() {
 	const { user } = useAuth();
+	const isOwner = user?.roles?.includes("OWNER");
+
 	const updateProfile = useUpdateProfile();
 	const { data: organization } = useOrganization();
 	const updateOrganization = useUpdateOrganization();
 	const changePassword = useChangePassword();
 
 	const profileForm = useForm({ defaultValues: { name: user?.name ?? "", phone: user?.phone ?? "" } });
-	const orgForm = useForm({ defaultValues: { name: "", email: "", phone: "", address: "" } });
+	const orgForm = useForm<UpdateOrganizationPayload>({ defaultValues: { name: "", handle: "", email: "", phone: "", address: "" } });
 	const passwordForm = useForm<ChangePasswordFormValues>({ resolver: zodResolver(changePasswordSchema) });
 
 	useEffect(() => {
-		if (organization) orgForm.reset({ name: organization.name, email: organization.email ?? "", phone: organization.phone ?? "", address: organization.address ?? "" });
+		if (organization)
+			orgForm.reset({
+				name: organization.name,
+				handle: organization.handle ?? "",
+				email: organization.email ?? "",
+				phone: organization.phone ?? "",
+				address: organization.address ?? "",
+			});
 	}, [organization]); // eslint-disable-line react-hooks/exhaustive-deps
 
 	return (
@@ -49,25 +60,50 @@ export default function SettingsPage() {
 			</section>
 
 			<section className="rounded-xl border border-slate-200 bg-white p-6">
-				<h2 className="mb-4 text-sm font-semibold text-slate-700">Organization</h2>
-				<form
-					onSubmit={orgForm.handleSubmit(values => updateOrganization.mutate(values))}
-					className="space-y-4"
-				>
-					<FormField label="Business name">
-						<Input {...orgForm.register("name")} />
-					</FormField>
-					<FormField label="Email">
-						<Input type="email" {...orgForm.register("email")} />
-					</FormField>
-					<FormField label="Phone">
-						<Input {...orgForm.register("phone")} />
-					</FormField>
-					<FormField label="Address">
-						<Input {...orgForm.register("address")} />
-					</FormField>
-					<Button type="submit" isLoading={updateOrganization.isPending}>Save organization</Button>
-				</form>
+				<div className="mb-4 flex items-center justify-between">
+					<h2 className="text-sm font-semibold text-slate-700">Organization</h2>
+					{!isOwner && (
+						<span className="flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500">
+							<Lock className="h-3 w-3" />
+							Owner only
+						</span>
+					)}
+				</div>
+
+				{!isOwner && (
+					<p className="mb-4 -mt-2 text-sm text-slate-500">
+						Only the organization owner can update these details. Ask your owner if something needs to change.
+					</p>
+				)}
+
+				<fieldset disabled={!isOwner} className="space-y-4 disabled:opacity-60">
+					<form
+						onSubmit={orgForm.handleSubmit(values => updateOrganization.mutate(values))}
+						className="space-y-4"
+					>
+						<FormField label="Business name">
+							<Input {...orgForm.register("name")} />
+						</FormField>
+						<FormField
+							label="Handle (public URL)"
+							hint="Letters, numbers and hyphens only. This becomes your public link, e.g. posvora.com/shop/your-handle."
+						>
+							<Input placeholder="your-business" {...orgForm.register("handle")} />
+						</FormField>
+						<FormField label="Email">
+							<Input type="email" {...orgForm.register("email")} />
+						</FormField>
+						<FormField label="Phone">
+							<Input {...orgForm.register("phone")} />
+						</FormField>
+						<FormField label="Address">
+							<Input {...orgForm.register("address")} />
+						</FormField>
+						{isOwner && (
+							<Button type="submit" isLoading={updateOrganization.isPending}>Save organization</Button>
+						)}
+					</form>
+				</fieldset>
 			</section>
 
 			<section className="rounded-xl border border-slate-200 bg-white p-6">
