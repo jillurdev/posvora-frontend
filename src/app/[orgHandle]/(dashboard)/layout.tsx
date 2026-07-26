@@ -52,12 +52,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
 	return (
 		<ActiveShopProvider>
-			<div className="flex min-h-screen bg-slate-50">
+			<div className="flex h-screen overflow-hidden bg-slate-50">
 				<Sidebar />
 				<MobileSidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
-				<div className="flex min-h-screen flex-1 flex-col">
+				<div className="flex h-screen flex-1 flex-col overflow-hidden">
 					<Topbar onMenuClick={() => setMobileOpen(true)} />
-					<main className="flex-1 p-4 lg:p-8">{children}</main>
+					<main className="flex-1 overflow-y-auto p-4 lg:p-8">{children}</main>
 				</div>
 			</div>
 		</ActiveShopProvider>

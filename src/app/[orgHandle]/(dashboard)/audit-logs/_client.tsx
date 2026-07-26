@@ -49,12 +49,25 @@ export default function AuditLogsPage() {
 		{
 			header: "User",
 			accessor: l => (
-				<div className="flex flex-col">
-					<span className="font-medium">
-						{l.user?.name ?? (l.userId ? l.userId.slice(0, 8) : "System")}
-					</span>
-					{l.user?.email && (
-						<span className="text-xs text-slate-500">{l.user.email}</span>
+				<div className="flex items-start justify-between gap-3">
+					<div className="flex flex-col">
+						<span className="font-medium">
+							{l.user?.name ?? (l.userId ? l.userId.slice(0, 8) : "System")}
+						</span>
+						{l.user?.email && (
+							<span className="text-xs text-slate-500">{l.user.email}</span>
+						)}
+					</div>
+					{l.user?.roles && l.user.roles.length > 0 && (
+						<div className="flex flex-wrap justify-end gap-1">
+							{l.user.roles.map(({ role }) => (
+								<span
+									key={role.id}
+									className="inline-flex shrink-0 items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+									{role.name}
+								</span>
+							))}
+						</div>
 					)}
 				</div>
 			),

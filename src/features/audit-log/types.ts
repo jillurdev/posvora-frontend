@@ -2,6 +2,9 @@ export interface AuditLogUser {
 	id: string;
 	name: string;
 	email: string;
+	roles: {
+		role: { id: string; name: string; systemRole: string };
+	}[];
 }
 
 export interface AuditLog {
