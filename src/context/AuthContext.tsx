@@ -41,6 +41,16 @@ function isProtectedPath(pathname: string): boolean {
 	return !PUBLIC_TOP_SEGMENTS.has(firstSegment);
 }
 
+// Pages that only make sense for a logged-out visitor. If a session turns out
+// to be valid while sitting on one of these, bounce straight to the dashboard
+// instead of showing the login/register form to an already-authenticated user.
+const AUTH_ONLY_SEGMENTS = new Set(["login", "register", "forgot-password", "reset-password"]);
+
+function isAuthOnlyPath(pathname: string): boolean {
+	const firstSegment = pathname.split("/").filter(Boolean)[0] ?? "";
+	return AUTH_ONLY_SEGMENTS.has(firstSegment);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
 	const [user, setUser] = useState<AuthUser | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
@@ -63,6 +73,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		refetchUser();
 	}, [refetchUser]);
+
+	// Once we know the visitor is already signed in, don't let them sit on
+	// /login, /register, etc. — send them straight to their dashboard.
+	useEffect(() => {
+		if (isLoading || !user) return;
+		if (!isAuthOnlyPath(pathname ?? "")) return;
+		router.replace(`/${user.organization?.handle ?? ""}/dashboard`);
+	}, [isLoading, user, pathname, router]);
 
 	useEffect(() => {
 		const handleLogout = () => {

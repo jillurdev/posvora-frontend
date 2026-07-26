@@ -17,7 +17,11 @@ export function useExpenseCategories(shopId?: string) {
 }
 
 export function useExpenses(params: { branchId?: string; categoryId?: string }) {
-	return useQuery({ queryKey: ["expenses", params], queryFn: () => accountingApi.listExpenses(params) });
+	return useQuery({
+		queryKey: ["expenses", params],
+		queryFn: () => accountingApi.listExpenses(params),
+		enabled: !!params.branchId,
+	});
 }
 
 export function useCreateExpense() {
