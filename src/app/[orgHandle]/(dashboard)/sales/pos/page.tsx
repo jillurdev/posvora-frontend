@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { Spinner } from "@/components/ui/Spinner";
 import PageContent from "./_client";
 
-export const metadata: Metadata = { title: "Subscription" };
+export const metadata: Metadata = { title: "New Sale · POS" };
 
 export default function Page() {
 	return (
