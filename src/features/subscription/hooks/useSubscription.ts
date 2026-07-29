@@ -9,8 +9,16 @@ export function usePlans() {
 	return useQuery({ queryKey: ["plans"], queryFn: subscriptionApi.plans });
 }
 
+export function usePlanQuote(planId: string | undefined, durationMonths: number | undefined) {
+	return useQuery({
+		queryKey: ["subscription", "quote", planId, durationMonths],
+		queryFn: () => subscriptionApi.quote(planId!, durationMonths),
+		enabled: !!planId,
+	});
+}
+
 export function useMySubscription() {
-	return useQuery({ queryKey: ["subscription", "me"], queryFn: subscriptionApi.me });
+	return useQuery({ queryKey: ["subscription", "me"], queryFn: subscriptionApi.me, retry: false });
 }
 
 /**
@@ -22,7 +30,8 @@ export function useMySubscription() {
 export function useCheckout() {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: (planId: string) => subscriptionApi.checkout(planId),
+		mutationFn: ({ planId, durationMonths }: { planId: string; durationMonths?: number }) =>
+			subscriptionApi.checkout(planId, durationMonths),
 		onSuccess: (result: CheckoutResult) => {
 			if (result.requiresPayment && result.gatewayUrl) {
 				window.location.href = result.gatewayUrl;

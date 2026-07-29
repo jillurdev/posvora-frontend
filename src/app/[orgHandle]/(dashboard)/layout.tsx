@@ -9,6 +9,7 @@ import { Topbar } from "@/components/shared/Topbar";
 import { MobileSidebar } from "@/components/shared/MobileSidebar";
 import { ForceChangePasswordModal } from "@/components/shared/ForceChangePasswordModal";
 import { Spinner } from "@/components/ui/Spinner";
+import { SubscriptionStatusBanner } from "@/features/subscription/components/SubscriptionStatusBanner";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
 	const { user, isLoading } = useAuth();
@@ -57,6 +58,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 				<MobileSidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
 				<div className="flex h-screen flex-1 flex-col overflow-hidden">
 					<Topbar onMenuClick={() => setMobileOpen(true)} />
+					<SubscriptionStatusBanner />
 					<main className="flex-1 overflow-y-auto p-4 lg:p-8">{children}</main>
 				</div>
 			</div>

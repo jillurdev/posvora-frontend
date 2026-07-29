@@ -4,6 +4,7 @@ import { Bell, LogOut, Menu, Store } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useActiveShop } from "@/context/ActiveShopContext";
 import { useLogout } from "@/features/auth/hooks/useLogout";
+import { SubscriptionPlanBadge } from "@/features/subscription/components/SubscriptionPlanBadge";
 import { ROLE_LABELS } from "@/lib/permissions";
 
 export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
@@ -35,6 +36,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
 				)}
 			</div>
 			<div className="flex items-center gap-4">
+				<SubscriptionPlanBadge />
 				<button className="rounded-lg p-2 text-slate-500 hover:bg-slate-100">
 					<Bell className="h-5 w-5" />
 				</button>

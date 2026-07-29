@@ -1,9 +1,14 @@
 export interface Plan {
 	id: string;
 	name: string;
+	slug: string;
 	price: number;
-	billingCycle: string;
+	billingCycle: "MONTHLY" | "YEARLY";
 	trialDays?: number;
+	branchLimit?: number;
+	userLimit?: number;
+	storageLimitMb?: number;
+	apiLimitPerDay?: number;
 	features?: string[];
 }
 
@@ -13,11 +18,15 @@ export interface Subscription {
 	status: string;
 	trialEndsAt?: string | null;
 	currentEnd?: string | null;
-	currentPeriodEnd?: string | null;
 	scheduledPlanId?: string | null;
 	scheduledPlan?: Plan | null;
 	scheduledEffectiveAt?: string | null;
 	plan?: Plan;
+}
+
+export interface MySubscription {
+	subscription: Subscription | null;
+	hasUsedTrial: boolean;
 }
 
 export interface CheckoutResult {
@@ -25,5 +34,15 @@ export interface CheckoutResult {
 	scheduled: boolean;
 	gatewayUrl?: string;
 	effectiveAt?: string;
+	durationMonths?: number;
+	discountPercent?: number;
+	amount?: number;
 	subscription?: Subscription;
+}
+
+export interface DurationQuote {
+	months: number;
+	discountPercent: number;
+	amount: number;
+	monthlyRate: number;
 }
