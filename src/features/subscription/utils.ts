@@ -17,7 +17,7 @@ function formatStorage(mb: number | undefined) {
 export function planLimitLines(plan: Plan): string[] {
 	return [
 		formatLimit(plan.branchLimit, "branch"),
-		formatLimit(plan.userLimit, "user"),
+		formatLimit(plan.userLimit, "staff account"),
 		formatStorage(plan.storageLimitMb),
 		plan.apiLimitPerDay !== undefined ? `${plan.apiLimitPerDay.toLocaleString()} API calls/day` : null,
 	].filter((line): line is string => !!line);

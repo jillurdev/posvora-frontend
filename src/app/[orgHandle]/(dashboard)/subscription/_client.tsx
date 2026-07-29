@@ -10,9 +10,12 @@ import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { usePlans, useMySubscription, useCheckout } from "@/features/subscription/hooks/useSubscription";
 import { DurationPickerModal } from "@/features/subscription/components/DurationPickerModal";
+import { ConfirmPlanActionModal } from "@/features/subscription/components/ConfirmPlanActionModal";
 import { getRenewalWarning, isSubscriptionCurrentlyActive, isTrialEligible, planLimitLines } from "@/features/subscription/utils";
 import type { Plan } from "@/features/subscription/types";
 import { formatMoney, formatDate } from "@/lib/utils";
+
+type PendingConfirm = { plan: Plan; kind: "trial" | "free-immediate" | "free-scheduled" };
 
 export default function SubscriptionPage() {
 	const { data: plans = [], isLoading } = usePlans();
@@ -23,6 +26,7 @@ export default function SubscriptionPage() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [pickingPlan, setPickingPlan] = useState<Plan | null>(null);
+	const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
 
 	// SSLCommerz redirects the browser back here with ?payment=success|failed|cancelled
 	// after the customer completes (or abandons) checkout.
@@ -46,22 +50,42 @@ export default function SubscriptionPage() {
 	const warning = getRenewalWarning(subscription);
 
 	const handlePick = (plan: Plan) => {
-		// Free tier never needs a duration/payment step. If there's still
-		// paid/trial time left, the backend schedules the switch for period
-		// end instead of throwing away what's already been paid for.
+		// Every plan action gets an explicit confirm step — nothing fires on
+		// the first click, even the free/no-payment paths.
 		if (Number(plan.price) === 0) {
-			checkout.mutate({ planId: plan.id });
+			setPendingConfirm({ plan, kind: hasSomethingToLose ? "free-scheduled" : "free-immediate" });
 			return;
 		}
-		// Genuinely trial-eligible (never used a trial, no active subscription
-		// right now) -> activate immediately, no payment, no modal. The
-		// duration/payment picker only ever appears for an actual charge.
 		if (isTrialEligible(plan, subscription, hasUsedTrial)) {
-			checkout.mutate({ planId: plan.id });
+			setPendingConfirm({ plan, kind: "trial" });
 			return;
 		}
 		setPickingPlan(plan);
 	};
+
+	const confirmCopy = (() => {
+		if (!pendingConfirm) return null;
+		const { plan, kind } = pendingConfirm;
+		if (kind === "trial") {
+			return {
+				title: `Start your ${plan.trialDays}-day free trial?`,
+				description: `You'll get full access to the ${plan.name} plan for ${plan.trialDays} days, completely free — no card, no payment. We'll remind you well before it ends so you can decide whether to continue.`,
+				confirmLabel: "Start free trial",
+			};
+		}
+		if (kind === "free-scheduled") {
+			return {
+				title: "Switch to the Free plan?",
+				description: `You've already paid for your current plan, so nothing changes right now — you'll keep full access until ${renewalDate ? formatDate(renewalDate) : "your current period ends"}. After that, your organization moves to the Free plan (limited features) automatically.`,
+				confirmLabel: "Schedule switch to Free",
+			};
+		}
+		return {
+			title: "Switch to the Free plan?",
+			description: "Your organization will move to the Free plan right away — limited branches, staff accounts, storage, and API calls. You can upgrade again anytime.",
+			confirmLabel: "Switch now",
+		};
+	})();
 
 	return (
 		<div>
@@ -124,7 +148,9 @@ export default function SubscriptionPage() {
 			) : (
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{plans.map(plan => {
-						const active = subscription?.planId === plan.id && !subscription?.scheduledPlanId;
+						// The plan the org is actually on right now — independent of
+						// any downgrade scheduled for later, which is a separate thing.
+						const active = subscription?.planId === plan.id;
 						const isScheduled = subscription?.scheduledPlanId === plan.id;
 						const isUpgrade = subscription?.plan && plan.price > subscription.plan.price;
 						const isFree = Number(plan.price) === 0;
@@ -142,10 +168,14 @@ export default function SubscriptionPage() {
 							<div key={plan.id} className="flex flex-col rounded-xl border border-slate-200 bg-white p-6">
 								<div className="flex items-center justify-between">
 									<h3 className="text-lg font-semibold text-slate-900">{plan.name}</h3>
-									{activeOnTrial && <Badge tone="info">On trial</Badge>}
-									{active && !isTrialing && <Badge tone="success">Active</Badge>}
-									{isScheduled && <Badge tone="warning">Scheduled</Badge>}
+									<div className="flex gap-1.5">
+										{active && <Badge tone={activeOnTrial ? "info" : "success"}>{activeOnTrial ? "On trial" : "Active"}</Badge>}
+										{isScheduled && <Badge tone="warning">Scheduled</Badge>}
+									</div>
 								</div>
+								{active && subscription?.scheduledPlan && (
+									<p className="mt-0.5 text-xs text-amber-600">Switching to {subscription.scheduledPlan.name} soon</p>
+								)}
 								<p className="mt-2 text-2xl font-semibold text-slate-900">
 									{formatMoney(plan.price)}
 									<span className="text-sm font-normal text-slate-400"> /{plan.billingCycle?.toLowerCase()}</span>
@@ -193,10 +223,12 @@ export default function SubscriptionPage() {
 			)}
 
 			<p className="mt-6 text-xs text-slate-400">
-				Plans with a free trial never ask for payment up front. For paid checkouts you choose how long to prepay for
-				(1 month up to multiple years — longer terms get a discount). Upgrades take effect immediately after payment
-				via SSLCommerz. Downgrades — including switching to Free — take effect at the end of your current billing
-				period, so you never lose time you&apos;ve already paid for.
+				&quot;Staff accounts&quot; are the people who log in to run your business — cashiers, managers, etc. — not your
+				shop&apos;s customers, who are unlimited on every plan. Plans with a free trial never ask for payment up front.
+				For paid checkouts you choose how long to prepay for (1 month up to multiple years — longer terms get a
+				discount), and any unused time on your current plan is credited toward an upgrade. Downgrades — including
+				switching to Free — take effect at the end of your current billing period, so you never lose time you&apos;ve
+				already paid for.
 			</p>
 
 			<DurationPickerModal
@@ -209,6 +241,21 @@ export default function SubscriptionPage() {
 					setPickingPlan(null);
 				}}
 			/>
+
+			{pendingConfirm && confirmCopy && (
+				<ConfirmPlanActionModal
+					open={!!pendingConfirm}
+					title={confirmCopy.title}
+					description={confirmCopy.description}
+					confirmLabel={confirmCopy.confirmLabel}
+					isLoading={checkout.isPending}
+					onClose={() => setPendingConfirm(null)}
+					onConfirm={() => {
+						checkout.mutate({ planId: pendingConfirm.plan.id });
+						setPendingConfirm(null);
+					}}
+				/>
+			)}
 		</div>
 	);
 }

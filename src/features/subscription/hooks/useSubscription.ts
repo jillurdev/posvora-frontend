@@ -39,6 +39,8 @@ export function useCheckout() {
 			}
 			if (result.scheduled) {
 				toast.success("Plan change scheduled for the end of your current billing period.");
+			} else if (result.creditApplied) {
+				toast.success("Your remaining plan balance covered this upgrade — no payment needed!");
 			} else {
 				toast.success("Your plan is now active.");
 			}

@@ -127,8 +127,20 @@ export function DurationPickerModal({ plan, onClose, onConfirm, isSubmitting }: 
 								<span className="text-sm text-slate-500">{quote.months} month(s) total</span>
 								{quote.discountPercent > 0 && <Badge tone="success">{quote.discountPercent}% off</Badge>}
 							</div>
-							<p className="mt-1 text-2xl font-semibold text-slate-900">{formatMoney(quote.amount)}</p>
-							<p className="text-xs text-slate-400">≈ {formatMoney(quote.monthlyRate)} / month rate</p>
+							{quote.creditAmount > 0 ? (
+								<>
+									<p className="mt-1 text-sm text-slate-400 line-through">{formatMoney(quote.listAmount)}</p>
+									<p className="text-2xl font-semibold text-slate-900">{formatMoney(quote.amount)}</p>
+									<p className="text-xs text-emerald-600">
+										Includes {formatMoney(quote.creditAmount)} credit for unused time on your current plan
+									</p>
+								</>
+							) : (
+								<>
+									<p className="mt-1 text-2xl font-semibold text-slate-900">{formatMoney(quote.amount)}</p>
+									<p className="text-xs text-slate-400">≈ {formatMoney(quote.monthlyRate)} / month rate</p>
+								</>
+							)}
 						</>
 					)}
 				</div>
@@ -139,7 +151,7 @@ export function DurationPickerModal({ plan, onClose, onConfirm, isSubmitting }: 
 					isLoading={isSubmitting}
 					onClick={() => onConfirm(months)}
 				>
-					Continue to payment
+					{quote && quote.amount === 0 && quote.listAmount > 0 ? "Activate — fully covered by credit" : "Continue to payment"}
 				</Button>
 			</div>
 		</Modal>

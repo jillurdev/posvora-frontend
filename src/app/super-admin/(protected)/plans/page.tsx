@@ -96,7 +96,7 @@ export default function PlansPage() {
 	const columns: Column<Plan>[] = [
 		{ header: "Plan", accessor: p => <span className="font-medium text-slate-900">{p.name}</span> },
 		{ header: "Price", accessor: p => `${formatPrice(p.price)} / ${p.billingCycle.toLowerCase()}` },
-		{ header: "Limits", accessor: p => `${p.branchLimit} branches · ${p.userLimit} users` },
+		{ header: "Limits", accessor: p => `${p.branchLimit} branches · ${p.userLimit} staff accounts` },
 		{ header: "Subscribers", accessor: p => p._count?.subscriptions ?? 0 },
 		{
 			header: "Visibility",
@@ -198,7 +198,7 @@ export default function PlansPage() {
 					<div className="grid grid-cols-2 gap-4">
 						<TextField
 							id="plan-user-limit"
-							label="User limit"
+							label="Staff account limit"
 							type="number"
 							min={1}
 							value={form.userLimit}
@@ -213,6 +213,14 @@ export default function PlansPage() {
 							onChange={e => setForm(f => ({ ...f, storageLimitMb: Number(e.target.value) }))}
 						/>
 					</div>
+					<TextField
+						id="plan-api-limit"
+						label="API calls / day"
+						type="number"
+						min={1}
+						value={form.apiLimitPerDay}
+						onChange={e => setForm(f => ({ ...f, apiLimitPerDay: Number(e.target.value) }))}
+					/>
 					<label className="flex items-center gap-2 text-sm text-slate-700">
 						<input
 							type="checkbox"

@@ -25,13 +25,8 @@ export default function CustomersPage() {
 	const { data, isLoading } = useCustomers(activeShopId ?? "", { search: search || undefined, page, limit });
 	const createCustomer = useCreateCustomer();
 	const deleteCustomer = useDeleteCustomer();
-	const {
-		register,
-		handleSubmit,
-		reset,
-		formState: { errors },
-	} = useForm<CustomerPayload>();
-	
+	const { register, handleSubmit, reset } = useForm<CustomerPayload>();
+
 	if (shops.length === 0) {
 		return <EmptyState icon={Users} title="Create a shop first" description="Add a shop before managing customers." />;
 	}
@@ -76,71 +71,20 @@ export default function CustomersPage() {
 			/>
 
 			<div className="mb-4">
-				<SearchInput
-					value={search}
-					onChange={setSearch}
-					placeholder="Search customers..."
-				/>
+				<SearchInput value={search} onChange={setSearch} placeholder="Search customers..." />
 			</div>
 
-			<DataTable
-				columns={columns}
-				data={data?.data ?? []}
-				isLoading={isLoading}
-				rowKey={c => c.id}
-				emptyTitle="No customers yet"
-			/>
-			{data?.meta && (
-				<Pagination
-					page={data.meta.page}
-					totalPages={data.meta.totalPages}
-					onPageChange={setPage}
-				/>
-			)}
+			<DataTable columns={columns} data={data?.data ?? []} isLoading={isLoading} rowKey={c => c.id} emptyTitle="No customers yet" />
+			{data?.meta && <Pagination page={data.meta.page} totalPages={data.meta.totalPages} onPageChange={setPage} />}
 
-			<Modal
-				open={modalOpen}
-				onClose={() => setModalOpen(false)}
-				title="Add customer">
+			<Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add customer">
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-					<TextField
-						id="customer-name"
-						label="Name"
-						required
-						error={errors.name?.message}
-						{...register("name", { required: "Name is required" })}
-					/>
-					<TextField
-						id="customer-phone"
-						label="Phone"
-						required
-						error={errors.phone?.message}
-						{...register("phone", { required: "Phone is required" })}
-					/>
-					<TextField
-						id="customer-email"
-						label="Email"
-						type="email"
-						required
-						error={errors.email?.message}
-						{...register("email", {
-							required: "Email is required",
-							pattern: {
-								value: /^\S+@\S+\.\S+$/,
-								message: "Enter a valid email",
-							},
-						})}
-					/>
-					<TextField
-						id="customer-address"
-						label="Address"
-						{...register("address")}
-					/>
+					<TextField id="customer-name" label="Name" required {...register("name", { required: true })} />
+					<TextField id="customer-phone" label="Phone" {...register("phone")} />
+					<TextField id="customer-email" label="Email" type="email" {...register("email")} />
+					<TextField id="customer-address" label="Address" {...register("address")} />
 					<div className="flex justify-end gap-2 pt-2">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setModalOpen(false)}>
+						<Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
 							Cancel
 						</Button>
 						<Button type="submit" isLoading={createCustomer.isPending}>
@@ -152,3 +96,4 @@ export default function CustomersPage() {
 		</div>
 	);
 }
+	

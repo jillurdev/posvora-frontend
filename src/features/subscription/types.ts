@@ -36,6 +36,7 @@ export interface CheckoutResult {
 	effectiveAt?: string;
 	durationMonths?: number;
 	discountPercent?: number;
+	creditApplied?: number;
 	amount?: number;
 	subscription?: Subscription;
 }
@@ -43,6 +44,8 @@ export interface CheckoutResult {
 export interface DurationQuote {
 	months: number;
 	discountPercent: number;
+	listAmount: number;
+	creditAmount: number;
 	amount: number;
 	monthlyRate: number;
 }
