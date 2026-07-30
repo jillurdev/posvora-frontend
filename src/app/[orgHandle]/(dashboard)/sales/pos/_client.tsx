@@ -48,7 +48,7 @@ export default function PosPage() {
 	const { orgHandle } = useParams<{ orgHandle: string }>();
 	const searchParams = useSearchParams();
 	const resumeId = searchParams.get("resume") || undefined;
-	const { data: resumingSale } = useSale(resumeId);
+	const { data: resumingSale, isLoading: resumeLoading, isError: resumeError } = useSale(resumeId);
 	const [prefilled, setPrefilled] = useState(false);
 
 	const { activeShopId, shops } = useActiveShop();
@@ -95,8 +95,9 @@ export default function PosPage() {
 		if (resumingSale.customerId) setCustomerId(resumingSale.customerId);
 		setOrderDiscount(Number(resumingSale.discountAmount ?? 0));
 		setNote(resumingSale.note ?? "");
+		const items = resumingSale.items ?? [];
 		setCart(
-			(resumingSale.items ?? []).map(item => ({
+			items.map(item => ({
 				key: item.variantId ?? item.productId,
 				productId: item.productId,
 				variantId: item.variantId ?? undefined,
@@ -107,8 +108,20 @@ export default function PosPage() {
 				discountAmount: Number(item.discountAmount ?? 0),
 			})),
 		);
+		if (items.length === 0) {
+			toast.warning("This held sale has no items on it.");
+		}
 		setPrefilled(true);
 	}, [resumingSale, prefilled]);
+
+	// Surfaces a fetch failure loudly instead of leaving the cashier staring
+	// at what looks like an ordinary empty "new sale" screen.
+	useEffect(() => {
+		if (resumeId && resumeError) {
+			toast.error("Couldn't load that held sale. It may have been deleted or already completed.");
+			router.replace(`/${orgHandle}/sales`);
+		}
+	}, [resumeId, resumeError, router, orgHandle]);
 
 	const addToCart = (product: Product) => {
 		const variant = product.variants?.[0];
@@ -236,12 +249,20 @@ export default function PosPage() {
 			/>
 		);
 	}
+	if (resumeId && !prefilled && resumeLoading) {
+		return (
+			<div className="flex min-h-[50vh] flex-col items-center justify-center gap-3 text-slate-400">
+				<Spinner />
+				<p className="text-sm">Loading held sale…</p>
+			</div>
+		);
+	}
 
 	return (
 		<div>
 			<PageHeader
-				title="New Sale"
-				description="Search or scan a product to add it to the cart."
+				title={resumeId ? "Resume Sale" : "New Sale"}
+				description={resumeId ? "Held sale loaded — adjust anything needed, then complete or re-hold it." : "Search or scan a product to add it to the cart."}
 				action={
 					<Button variant="outline" onClick={() => router.push(`/${orgHandle}/sales`)}>
 						Sales history

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SearchInput } from "@/components/common/SearchInput";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Pagination } from "@/components/common/Pagination";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Modal } from "@/components/ui/Modal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Package } from "lucide-react";
 import { useActiveShop } from "@/context/ActiveShopContext";
@@ -23,6 +24,8 @@ export default function ProductsPage() {
 	const { page, limit, setPage } = usePagination(10);
 	const [search, setSearch] = useState("");
 	const [modalOpen, setModalOpen] = useState(false);
+	const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+	const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
 	const deleteProduct = useDeleteProduct();
 
 	const { data, isLoading } = useProducts({
@@ -42,9 +45,17 @@ export default function ProductsPage() {
 		);
 	}
 
+	const openEdit = (p: Product) => setEditingProduct(p);
+	const closeModal = () => {
+		setModalOpen(false);
+		setEditingProduct(null);
+	};
+
 	const columns: Column<Product>[] = [
 		{ header: "Name", accessor: p => <span className="font-medium text-slate-900">{p.name}</span> },
 		{ header: "SKU", accessor: p => p.sku },
+		{ header: "Category", accessor: p => p.category?.name ?? <span className="text-slate-300">—</span> },
+		{ header: "Brand", accessor: p => p.brand?.name ?? <span className="text-slate-300">—</span> },
 		{ header: "Cost", accessor: p => (p.costPrice != null ? formatMoney(p.costPrice) : "—") },
 		{ header: "Selling", accessor: p => (p.sellingPrice != null ? formatMoney(p.sellingPrice) : "—") },
 		{
@@ -62,12 +73,22 @@ export default function ProductsPage() {
 		{
 			header: "",
 			accessor: p => (
-				<button
-					onClick={() => deleteProduct.mutate(p.id)}
-					className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
-				>
-					<Trash2 className="h-4 w-4" />
-				</button>
+				<div className="flex items-center gap-1">
+					<button
+						onClick={() => openEdit(p)}
+						className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+						title="Edit product"
+					>
+						<Pencil className="h-4 w-4" />
+					</button>
+					<button
+						onClick={() => setDeletingProduct(p)}
+						className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
+						title="Delete product"
+					>
+						<Trash2 className="h-4 w-4" />
+					</button>
+				</div>
 			),
 		},
 	];
@@ -108,7 +129,38 @@ export default function ProductsPage() {
 
 			{data?.meta && <Pagination page={data.meta.page} totalPages={data.meta.totalPages} onPageChange={setPage} />}
 
-			{activeShopId && <ProductModal open={modalOpen} onClose={() => setModalOpen(false)} shopId={activeShopId} />}
+			{activeShopId && (
+				<ProductModal
+					open={modalOpen || !!editingProduct}
+					onClose={closeModal}
+					shopId={activeShopId}
+					editingProduct={editingProduct}
+				/>
+			)}
+
+			<Modal open={!!deletingProduct} onClose={() => setDeletingProduct(null)} title="Remove this product?" size="sm">
+				<div className="space-y-5">
+					<p className="text-sm text-slate-600">
+						<strong>{deletingProduct?.name}</strong> will be hidden from your catalog and stock lists. Past sales and
+						receipts that already reference it are not affected — nothing gets deleted from your sales history.
+					</p>
+					<div className="grid grid-cols-2 gap-2">
+						<Button variant="outline" onClick={() => setDeletingProduct(null)} disabled={deleteProduct.isPending}>
+							Cancel
+						</Button>
+						<Button
+							variant="danger"
+							isLoading={deleteProduct.isPending}
+							onClick={() => {
+								if (!deletingProduct) return;
+								deleteProduct.mutate(deletingProduct.id, { onSuccess: () => setDeletingProduct(null) });
+							}}
+						>
+							Remove product
+						</Button>
+					</div>
+				</div>
+			</Modal>
 		</div>
 	);
 }

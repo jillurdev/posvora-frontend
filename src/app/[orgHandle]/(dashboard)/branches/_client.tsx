@@ -8,8 +8,10 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { TextField, SelectField } from "@/components/ui/Field";
+import { Select } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useConfirm } from "@/context/ConfirmDialogContext";
+import { useActiveShop } from "@/context/ActiveShopContext";
 import { useShops } from "@/features/shop/hooks/useShops";
 import {
 	useBranches,
@@ -19,13 +21,27 @@ import {
 } from "@/features/branch/hooks/useBranches";
 import type { Branch, BranchPayload } from "@/features/branch/types";
 
+const ALL_SHOPS = "__all__";
+
 export default function BranchesPage() {
 	const { data: shops = [] } = useShops();
-	const { data: branches = [], isLoading } = useBranches();
+	const { activeShopId } = useActiveShop();
+	const { data: allBranches = [], isLoading } = useBranches();
 	const createBranch = useCreateBranch();
 	const updateBranch = useUpdateBranch();
 	const deleteBranch = useDeleteBranch();
 	const confirm = useConfirm();
+
+	// Defaults to whichever shop is currently active (same as Sales,
+	// Inventory, and the POS screen) so this list isn't a surprising
+	// cross-shop jumble — but "All shops" is still one click away for
+	// owners who genuinely want the full picture.
+	const [shopFilter, setShopFilter] = useState<string>(activeShopId ?? ALL_SHOPS);
+	useEffect(() => {
+		if (activeShopId) setShopFilter(activeShopId);
+	}, [activeShopId]);
+
+	const branches = shopFilter === ALL_SHOPS ? allBranches : allBranches.filter(b => b.shopId === shopFilter);
 
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
@@ -45,7 +61,7 @@ export default function BranchesPage() {
 
 	function openCreate() {
 		setEditingBranch(null);
-		reset({ shopId: "", name: "", code: "", address: "", phone: "" });
+		reset({ shopId: activeShopId || "", name: "", code: "", address: "", phone: "" });
 		setModalOpen(true);
 	}
 
@@ -128,9 +144,17 @@ export default function BranchesPage() {
 				title="Branches"
 				description="Physical outlets or counters under each shop."
 				action={
-					<Button onClick={openCreate}>
-						<Plus className="h-4 w-4" /> Add branch
-					</Button>
+					<div className="flex items-center gap-2">
+						<Select value={shopFilter} onChange={e => setShopFilter(e.target.value)} className="w-44">
+							<option value={ALL_SHOPS}>All shops</option>
+							{shops.map(s => (
+								<option key={s.id} value={s.id}>{s.name}</option>
+							))}
+						</Select>
+						<Button onClick={openCreate}>
+							<Plus className="h-4 w-4" /> Add branch
+						</Button>
+					</div>
 				}
 			/>
 

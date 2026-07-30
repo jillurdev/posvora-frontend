@@ -135,6 +135,14 @@ export default function SubscriptionPage() {
 				</div>
 			)}
 
+			{Number(subscription?.creditBalance ?? 0) > 0 && (
+				<div className="mb-4 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+					<Check className="h-4 w-4 shrink-0" />
+					You have <strong>{formatMoney(subscription!.creditBalance!)}</strong> in credit banked from a previous plan change — it'll be
+					applied automatically to your next upgrade.
+				</div>
+			)}
+
 			{subscription?.scheduledPlanId && subscription.scheduledPlan && (
 				<div className="mb-4 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
 					<Clock className="h-4 w-4 shrink-0" />

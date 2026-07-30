@@ -41,6 +41,9 @@ export interface Product {
 	categoryId?: string | null;
 	brandId?: string | null;
 	unitId?: string | null;
+	category?: { id: string; name: string } | null;
+	brand?: { id: string; name: string } | null;
+	unit?: { id: string; name: string; shortName: string } | null;
 	description?: string | null;
 	costPrice?: number | null;
 	sellingPrice?: number | null;

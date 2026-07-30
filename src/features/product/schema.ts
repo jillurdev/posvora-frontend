@@ -13,7 +13,11 @@ export const productSchema = z.object({
 	sellingPrice: z.coerce.number().min(0).optional(),
 	stockAlertQty: z.coerce.number().min(0).optional(),
 	openingQuantity: z.coerce.number().min(0).optional(),
-});
+	openingWarehouseId: z.string().optional(),
+}).refine(
+	(data) => !data.openingQuantity || data.openingQuantity <= 0 || !!data.openingWarehouseId,
+	{ message: "Choose a warehouse to receive the opening stock into", path: ["openingWarehouseId"] },
+);
 export type ProductFormValues = z.infer<typeof productSchema>;
 
 export const categorySchema = z.object({

@@ -21,6 +21,7 @@ export interface Subscription {
 	scheduledPlanId?: string | null;
 	scheduledPlan?: Plan | null;
 	scheduledEffectiveAt?: string | null;
+	creditBalance?: number;
 	plan?: Plan;
 }
 
