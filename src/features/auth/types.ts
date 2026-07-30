@@ -35,6 +35,24 @@ export interface AuthResult {
 	refreshToken?: string;
 }
 
+// Returned by /auth/register now that the account is PENDING until the
+// email OTP is confirmed — no tokens/user yet, just what's needed to show
+// the "check your inbox" screen.
+export interface RegisterPendingResult {
+	requiresEmailVerification: true;
+	email: string;
+	otpExpiresInMinutes: number;
+}
+
+export interface VerifyEmailPayload {
+	email: string;
+	code: string;
+}
+
+export interface ResendOtpPayload {
+	email: string;
+}
+
 export interface TwoFactorChallenge {
 	twoFactorRequired: true;
 	challengeToken: string;

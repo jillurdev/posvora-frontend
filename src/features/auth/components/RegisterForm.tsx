@@ -23,7 +23,8 @@ export function RegisterForm() {
 
 	const onSubmit = (values: RegisterFormValues) => {
 		mutate(values, {
-			onSuccess: result => router.replace(`/${result.organization?.handle ?? ""}/dashboard`),
+			onSuccess: result =>
+				router.replace(`/verify-email?email=${encodeURIComponent(result.email)}`),
 		});
 	};
 

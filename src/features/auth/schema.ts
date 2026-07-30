@@ -16,6 +16,12 @@ export const registerSchema = z.object({
 });
 export type RegisterFormValues = z.infer<typeof registerSchema>;
 
+export const verifyEmailSchema = z.object({
+	email: z.string().email("Enter a valid email"),
+	code: z.string().length(6, "Enter the 6-digit code"),
+});
+export type VerifyEmailFormValues = z.infer<typeof verifyEmailSchema>;
+
 export const changePasswordSchema = z
 	.object({
 		oldPassword: z.string().min(6),

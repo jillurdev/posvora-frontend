@@ -99,6 +99,23 @@ export interface PlatformAdmin {
 	createdAt: string;
 }
 
+export type KycDocumentType = "NID" | "PASSPORT" | "TRADE_LICENSE";
+export type KycReviewStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface KycDocument {
+	id: string;
+	organizationId: string;
+	type: KycDocumentType;
+	fileUrl: string;
+	status: KycReviewStatus;
+	rejectionReason?: string | null;
+	reviewedById?: string | null;
+	reviewedAt?: string | null;
+	createdAt: string;
+	organization?: { id: string; name: string; handle: string | null };
+	submittedBy?: { id: string; name: string; email: string };
+}
+
 export interface CreatePlatformAdminPayload {
 	name: string;
 	email: string;

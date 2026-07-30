@@ -156,3 +156,33 @@ export function useAdminUpdateTicketStatus(id: string) {
 		onError: (err: Error) => toast.error(err.message || "Could not update status"),
 	});
 }
+
+// ── KYC (organization verification) ─────────────────────────────
+export function useAdminKycDocuments(status?: string) {
+	return useQuery({
+		queryKey: ["admin", "kyc-documents", status],
+		queryFn: () => superAdminApi.kycDocuments(status),
+	});
+}
+
+export function useAdminKycDocument(id: string) {
+	return useQuery({
+		queryKey: ["admin", "kyc-documents", id],
+		queryFn: () => superAdminApi.kycDocument(id),
+		enabled: !!id,
+	});
+}
+
+export function useAdminReviewKycDocument() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, approve, note }: { id: string; approve: boolean; note?: string }) =>
+			superAdminApi.reviewKycDocument(id, { approve, note }),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["admin", "kyc-documents"] });
+			qc.invalidateQueries({ queryKey: ["admin", "organizations"] });
+			toast.success("KYC document reviewed");
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not review document"),
+	});
+}

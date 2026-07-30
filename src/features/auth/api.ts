@@ -7,14 +7,21 @@ import type {
 	LoginPayload,
 	LoginResult,
 	RegisterPayload,
+	RegisterPendingResult,
+	ResendOtpPayload,
 	ResetPasswordPayload,
 	TwoFactorSetup,
+	VerifyEmailPayload,
 	VerifyTwoFactorPayload,
 } from "./types";
 
 export const authApi = {
 	register: (payload: RegisterPayload) =>
-		httpClient.post<AuthResult>("/auth/register", payload),
+		httpClient.post<RegisterPendingResult>("/auth/register", payload),
+	verifyEmail: (payload: VerifyEmailPayload) =>
+		httpClient.post<AuthResult>("/auth/verify-email", payload),
+	resendOtp: (payload: ResendOtpPayload) =>
+		httpClient.post<{ message: string }>("/auth/resend-otp", payload),
 	login: (payload: LoginPayload) =>
 		httpClient.post<LoginResult>("/auth/login", payload),
 	verifyTwoFactor: (payload: VerifyTwoFactorPayload) =>

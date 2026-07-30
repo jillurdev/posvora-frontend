@@ -6,6 +6,7 @@ import type {
 	AssignSubscriptionPayload,
 	CreatePlanPayload,
 	CreatePlatformAdminPayload,
+	KycDocument,
 	Plan,
 	PlatformAdmin,
 	UpdatePlanPayload,
@@ -40,4 +41,10 @@ export const superAdminApi = {
 	updateSupportTicketStatus: (id: string, status: SupportTicketStatus) =>
 		httpClient.patch(`/admin/support-tickets/${id}/status`, { status }),
 	createAnnouncement: (payload: { title: string; message: string }) => httpClient.post("/admin/announcements", payload),
+
+	kycDocuments: (status?: string) =>
+		httpClient.get<KycDocument[]>("/admin/kyc/documents", status ? { status } : undefined),
+	kycDocument: (id: string) => httpClient.get<KycDocument>(`/admin/kyc/documents/${id}`),
+	reviewKycDocument: (id: string, payload: { approve: boolean; note?: string }) =>
+		httpClient.patch<KycDocument>(`/admin/kyc/documents/${id}/review`, payload),
 };

@@ -13,6 +13,7 @@ import { useOrganization, useUpdateOrganization } from "@/features/organization/
 import { useChangePassword } from "@/features/auth/hooks/useChangePassword";
 import { changePasswordSchema, ChangePasswordFormValues } from "@/features/auth/schema";
 import { TwoFactorSection } from "@/features/auth/components/TwoFactorSection";
+import { KycVerificationSection } from "@/features/kyc/components/KycVerificationSection";
 import type { UpdateOrganizationPayload } from "@/features/organization/types";
 
 export default function SettingsPage() {
@@ -41,17 +42,33 @@ export default function SettingsPage() {
 
 	return (
 		<div className="max-w-2xl space-y-8">
-			<PageHeader title="Settings" description="Manage your profile, organization and security." />
+			<PageHeader
+				title="Settings"
+				description="Manage your profile, organization and security."
+			/>
 
 			<section className="rounded-xl border border-slate-200 bg-white p-6">
-				<h2 className="mb-4 text-sm font-semibold text-slate-700">Your profile</h2>
+				<h2 className="mb-4 text-sm font-semibold text-slate-700">
+					Your profile
+				</h2>
 				<form
-					onSubmit={profileForm.handleSubmit(values => updateProfile.mutate(values))}
-					className="space-y-4"
-				>
-					<TextField id="profile-name" label="Name" {...profileForm.register("name")} />
-					<TextField id="profile-phone" label="Phone" {...profileForm.register("phone")} />
-					<Button type="submit" isLoading={updateProfile.isPending}>Save profile</Button>
+					onSubmit={profileForm.handleSubmit(values =>
+						updateProfile.mutate(values),
+					)}
+					className="space-y-4">
+					<TextField
+						id="profile-name"
+						label="Name"
+						{...profileForm.register("name")}
+					/>
+					<TextField
+						id="profile-phone"
+						label="Phone"
+						{...profileForm.register("phone")}
+					/>
+					<Button type="submit" isLoading={updateProfile.isPending}>
+						Save profile
+					</Button>
 				</form>
 			</section>
 
@@ -68,44 +85,71 @@ export default function SettingsPage() {
 
 				{!isOwner && (
 					<p className="mb-4 -mt-2 text-sm text-slate-500">
-						Only the organization owner can update these details. Ask your owner if something needs to change.
+						Only the organization owner can update these details. Ask your owner
+						if something needs to change.
 					</p>
 				)}
 
 				<fieldset disabled={!isOwner} className="space-y-4 disabled:opacity-60">
 					<form
-						onSubmit={orgForm.handleSubmit(values => updateOrganization.mutate(values))}
-						className="space-y-4"
-					>
-						<TextField id="org-name" label="Business name" {...orgForm.register("name")} />
+						onSubmit={orgForm.handleSubmit(values =>
+							updateOrganization.mutate(values),
+						)}
+						className="space-y-4">
+						<TextField
+							id="org-name"
+							label="Business name"
+							{...orgForm.register("name")}
+						/>
 						<TextField
 							id="org-handle"
 							label="Handle (public URL)"
-							hint="Letters, numbers and hyphens only. This becomes your public link, e.g. posvora.com/shop/your-handle."
+							hint="Use letters, numbers, and hyphens only. This creates your organization's unique URL. Owners and staff will use it to access the workspace, for example: posvora.com/your-business/dashboard."
 							placeholder="your-business"
 							{...orgForm.register("handle")}
 						/>
-						<TextField id="org-email" label="Email" type="email" {...orgForm.register("email")} />
-						<TextField id="org-phone" label="Phone" {...orgForm.register("phone")} />
-						<TextField id="org-address" label="Address" {...orgForm.register("address")} />
+						<TextField
+							id="org-email"
+							label="Email"
+							type="email"
+							{...orgForm.register("email")}
+						/>
+						<TextField
+							id="org-phone"
+							label="Phone"
+							{...orgForm.register("phone")}
+						/>
+						<TextField
+							id="org-address"
+							label="Address"
+							{...orgForm.register("address")}
+						/>
 						{isOwner && (
-							<Button type="submit" isLoading={updateOrganization.isPending}>Save organization</Button>
+							<Button type="submit" isLoading={updateOrganization.isPending}>
+								Save organization
+							</Button>
 						)}
 					</form>
 				</fieldset>
 			</section>
 
+			<KycVerificationSection />
+
 			<section className="rounded-xl border border-slate-200 bg-white p-6">
-				<h2 className="mb-4 text-sm font-semibold text-slate-700">Change password</h2>
+				<h2 className="mb-4 text-sm font-semibold text-slate-700">
+					Change password
+				</h2>
 				<form
 					onSubmit={passwordForm.handleSubmit(values =>
 						changePassword.mutate(
-							{ oldPassword: values.oldPassword, newPassword: values.newPassword },
+							{
+								oldPassword: values.oldPassword,
+								newPassword: values.newPassword,
+							},
 							{ onSuccess: () => passwordForm.reset() },
 						),
 					)}
-					className="space-y-4"
-				>
+					className="space-y-4">
 					<TextField
 						id="current-password"
 						label="Current password"
@@ -127,7 +171,9 @@ export default function SettingsPage() {
 						error={passwordForm.formState.errors.confirmPassword?.message}
 						{...passwordForm.register("confirmPassword")}
 					/>
-					<Button type="submit" isLoading={changePassword.isPending}>Update password</Button>
+					<Button type="submit" isLoading={changePassword.isPending}>
+						Update password
+					</Button>
 				</form>
 			</section>
 
