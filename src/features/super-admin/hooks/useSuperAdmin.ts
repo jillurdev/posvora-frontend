@@ -186,3 +186,62 @@ export function useAdminReviewKycDocument() {
 		onError: (err: Error) => toast.error(err.message || "Could not review document"),
 	});
 }
+
+// ── Announcements (platform → organization messaging) ───────────
+export function useAdminAnnouncements(organizationId?: string) {
+	return useQuery({
+		queryKey: ["admin", "announcements", organizationId],
+		queryFn: () => superAdminApi.announcements(organizationId),
+	});
+}
+
+export function useCreateAnnouncement() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (payload: { title: string; message: string; organizationId?: string }) =>
+			superAdminApi.createAnnouncement(payload),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
+			toast.success("Message sent");
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not send message"),
+	});
+}
+
+export function useToggleAnnouncement() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) =>
+			superAdminApi.toggleAnnouncement(id, isActive),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["admin", "announcements"] });
+			toast.success("Announcement updated");
+		},
+		onError: (err: Error) => toast.error(err.message),
+	});
+}
+
+// ── Billing ───────────────────────────────────────────────────────
+export function useAdminBillingSummary() {
+	return useQuery({ queryKey: ["admin", "billing", "summary"], queryFn: superAdminApi.billingSummary });
+}
+
+export function useAdminInvoices(params?: { page?: number; limit?: number; status?: string; organizationId?: string }) {
+	return useQuery({
+		queryKey: ["admin", "billing", "invoices", params],
+		queryFn: () => superAdminApi.invoices(params),
+	});
+}
+
+export function useMarkInvoicePaid() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, note }: { id: string; note?: string }) => superAdminApi.markInvoicePaid(id, note),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["admin", "billing"] });
+			qc.invalidateQueries({ queryKey: ["admin", "organizations"] });
+			toast.success("Invoice marked as paid");
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not mark invoice as paid"),
+	});
+}

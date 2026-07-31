@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ShieldCheck, LayoutDashboard, LifeBuoy, LogOut, Building2, CreditCard, Users, BadgeCheck } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, LifeBuoy, LogOut, Building2, CreditCard, Users, BadgeCheck, Wallet, MessageSquare } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { useAdminAuth } from "@/context/AdminAuthContext";
@@ -16,6 +16,8 @@ const NAV: { label: string; href: string; icon: typeof LayoutDashboard; exact?: 
 	{ label: "Organizations", href: "/super-admin/organizations", icon: Building2, roles: ["OWNER", "ADMIN"] },
 	{ label: "Plans", href: "/super-admin/plans", icon: CreditCard, roles: ["OWNER", "ADMIN"] },
 	{ label: "KYC Verification", href: "/super-admin/kyc", icon: BadgeCheck, roles: ["OWNER", "ADMIN"] },
+	{ label: "Billing", href: "/super-admin/billing", icon: Wallet, roles: ["OWNER", "ADMIN"] },
+	{ label: "Messages", href: "/super-admin/messages", icon: MessageSquare, roles: ["OWNER", "ADMIN"] },
 	{ label: "Platform Staff", href: "/super-admin/staff", icon: Users, roles: ["OWNER"] },
 	{ label: "Support Tickets", href: "/super-admin/support", icon: LifeBuoy },
 ];

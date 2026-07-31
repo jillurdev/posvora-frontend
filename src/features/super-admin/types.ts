@@ -3,7 +3,8 @@ export interface AdminDashboard {
 	shops: number;
 	activeSubscriptions: number;
 	openSupportTickets: number;
-	revenueThisMonth?: number;
+	pendingKyc: number;
+	billing: BillingSummary;
 }
 
 export interface AdminOrgOwner {
@@ -114,6 +115,39 @@ export interface KycDocument {
 	createdAt: string;
 	organization?: { id: string; name: string; handle: string | null };
 	submittedBy?: { id: string; name: string; email: string };
+}
+
+export interface BillingSummary {
+	mrr: number;
+	activeSubscriptions: number;
+	collectedThisMonth: number;
+	outstandingUnpaid: number;
+	totalCollected: number;
+}
+
+export interface AdminInvoice {
+	id: string;
+	amount: string | number;
+	creditAmount?: string | number | null;
+	status: string;
+	paymentMethod?: string | null;
+	paidAt?: string | null;
+	periodStart: string;
+	periodEnd: string;
+	createdAt: string;
+	plan?: { id: string; name: string } | null;
+	subscription: { organization: { id: string; name: string; handle: string | null } };
+}
+
+export interface Announcement {
+	id: string;
+	title: string;
+	message: string;
+	organizationId?: string | null;
+	organization?: { id: string; name: string; handle: string | null } | null;
+	createdBy?: { id: string; name: string };
+	isActive: boolean;
+	createdAt: string;
 }
 
 export interface CreatePlatformAdminPayload {

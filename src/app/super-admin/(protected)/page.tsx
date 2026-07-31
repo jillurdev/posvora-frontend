@@ -40,6 +40,25 @@ export default function SuperAdminPage() {
 				<StatCard label="Open support tickets" value={dashboard?.openSupportTickets ?? "—"} href="/super-admin/support" />
 			</div>
 
+			<div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+				<StatCard
+					label="MRR"
+					value={dashboard ? `৳${dashboard.billing.mrr.toLocaleString()}` : "—"}
+					href="/super-admin/billing"
+				/>
+				<StatCard
+					label="Collected this month"
+					value={dashboard ? `৳${dashboard.billing.collectedThisMonth.toLocaleString()}` : "—"}
+					href="/super-admin/billing"
+				/>
+				<StatCard
+					label="Outstanding unpaid"
+					value={dashboard ? `৳${dashboard.billing.outstandingUnpaid.toLocaleString()}` : "—"}
+					href="/super-admin/billing"
+				/>
+				<StatCard label="Pending KYC" value={dashboard?.pendingKyc ?? "—"} href="/super-admin/kyc" />
+			</div>
+
 			<div className="mb-3 flex items-center justify-between">
 				<h2 className="text-sm font-semibold text-slate-900">Recent organizations</h2>
 				<Link href="/super-admin/organizations" className="text-sm font-medium text-slate-600 hover:underline">

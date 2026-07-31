@@ -1,9 +1,12 @@
 import { httpClient } from "@/services/httpClient";
 import type {
 	AdminDashboard,
+	AdminInvoice,
 	AdminOrganization,
 	AdminOrganizationDetail,
+	Announcement,
 	AssignSubscriptionPayload,
+	BillingSummary,
 	CreatePlanPayload,
 	CreatePlatformAdminPayload,
 	KycDocument,
@@ -40,7 +43,18 @@ export const superAdminApi = {
 		httpClient.post(`/admin/support-tickets/${id}/messages`, { message }),
 	updateSupportTicketStatus: (id: string, status: SupportTicketStatus) =>
 		httpClient.patch(`/admin/support-tickets/${id}/status`, { status }),
-	createAnnouncement: (payload: { title: string; message: string }) => httpClient.post("/admin/announcements", payload),
+	announcements: (organizationId?: string) =>
+		httpClient.get<Announcement[]>("/admin/announcements", organizationId ? { organizationId } : undefined),
+	createAnnouncement: (payload: { title: string; message: string; organizationId?: string }) =>
+		httpClient.post<Announcement>("/admin/announcements", payload),
+	toggleAnnouncement: (id: string, isActive: boolean) =>
+		httpClient.patch<Announcement>(`/admin/announcements/${id}/toggle`, { isActive }),
+
+	billingSummary: () => httpClient.get<BillingSummary>("/admin/billing/summary"),
+	invoices: (params?: { page?: number; limit?: number; status?: string; organizationId?: string }) =>
+		httpClient.getPaginated<AdminInvoice[]>("/admin/billing/invoices", params),
+	markInvoicePaid: (id: string, note?: string) =>
+		httpClient.patch<AdminInvoice>(`/admin/billing/invoices/${id}/mark-paid`, { note }),
 
 	kycDocuments: (status?: string) =>
 		httpClient.get<KycDocument[]>("/admin/kyc/documents", status ? { status } : undefined),
