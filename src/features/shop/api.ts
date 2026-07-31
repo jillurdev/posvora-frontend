@@ -18,4 +18,9 @@ export const shopApi = {
 	update: (id: string, payload: Partial<ShopPayload>) => httpClient.patch<Shop>(`/shops/${id}`, payload),
 	remove: (id: string) => httpClient.delete(`/shops/${id}`),
 	getPublic: (slug: string) => httpClient.get<PublicShop>(`/shops/public/${slug}`),
+	uploadLogo: (id: string, file: File) => {
+		const formData = new FormData();
+		formData.append("file", file);
+		return httpClient.upload<Shop>(`/shops/${id}/logo`, formData);
+	},
 };

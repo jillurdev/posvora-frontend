@@ -44,3 +44,15 @@ export function useDeleteShop() {
 		onError: (err: Error) => toast.error(err.message),
 	});
 }
+
+export function useUploadShopLogo() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, file }: { id: string; file: File }) => shopApi.uploadLogo(id, file),
+		onSuccess: () => {
+			toast.success("Shop logo updated");
+			qc.invalidateQueries({ queryKey: ["shops"] });
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not upload logo"),
+	});
+}

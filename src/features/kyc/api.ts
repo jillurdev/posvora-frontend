@@ -1,8 +1,12 @@
 import { httpClient } from "@/services/httpClient";
-import type { KycDocumentsResponse, SubmitKycDocumentPayload, KycDocument } from "./types";
+import type { KycDocumentsResponse, KycDocumentType, KycDocument } from "./types";
 
 export const kycApi = {
 	listMine: () => httpClient.get<KycDocumentsResponse>("/kyc/documents"),
-	submit: (payload: SubmitKycDocumentPayload) =>
-		httpClient.post<KycDocument>("/kyc/documents", payload),
+	submit: (type: KycDocumentType, file: File) => {
+		const formData = new FormData();
+		formData.append("type", type);
+		formData.append("file", file);
+		return httpClient.upload<KycDocument>("/kyc/documents", formData);
+	},
 };

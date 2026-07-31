@@ -29,3 +29,15 @@ export function useUpdateOrganization() {
 		onError: (err: Error) => toast.error(err.message),
 	});
 }
+
+export function useUploadOrganizationLogo() {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (file: File) => organizationApi.uploadLogo(file),
+		onSuccess: () => {
+			toast.success("Logo updated");
+			queryClient.invalidateQueries({ queryKey: ["organization", "me"] });
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not upload logo"),
+	});
+}

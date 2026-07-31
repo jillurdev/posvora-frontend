@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { ShieldCheck, ShieldAlert, ShieldQuestion } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { Input, Select } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Input";
 import { FormField } from "@/components/ui/FormField";
+import { FileUploadPreview } from "@/components/common/FileUploadPreview";
 import { useKycDocuments, useSubmitKycDocument } from "../hooks/useKyc";
 import type { KycDocumentType } from "../types";
 import { formatDateTime } from "@/lib/utils";
@@ -19,20 +19,12 @@ const STATUS_META: Record<string, { label: string; tone: "warning" | "success" |
 
 export function KycVerificationSection() {
 	const { data, isLoading } = useKycDocuments();
-	const { mutate: submit, isPending } = useSubmitKycDocument();
-
+	const { mutateAsync: submit } = useSubmitKycDocument();
 	const [type, setType] = useState<KycDocumentType>("NID");
-	const [fileUrl, setFileUrl] = useState("");
 
 	const status = data?.verificationStatus ?? "UNVERIFIED";
 	const meta = STATUS_META[status];
 	const Icon = meta.icon;
-
-	const onSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!fileUrl) return;
-		submit({ type, fileUrl }, { onSuccess: () => setFileUrl("") });
-	};
 
 	if (isLoading) return null;
 
@@ -46,32 +38,27 @@ export function KycVerificationSection() {
 			</div>
 
 			<p className="mb-4 -mt-2 text-sm text-slate-500">
-				Submit your NID, passport, or trade license so we can verify your business. Verified
+				Upload your NID, passport, or trade license so we can verify your business. Verified
 				organizations get a trust badge and higher transaction limits — this also helps us keep
 				the platform free of fraudulent shops.
 			</p>
 
 			{status !== "VERIFIED" && (
-				<form onSubmit={onSubmit} className="mb-6 grid gap-4 sm:grid-cols-[160px_1fr_auto] sm:items-end">
-					<FormField label="Document type">
+				<div className="mb-6 space-y-3">
+					<FormField label="Document type" className="max-w-[220px]">
 						<Select value={type} onChange={e => setType(e.target.value as KycDocumentType)}>
 							<option value="NID">National ID</option>
 							<option value="PASSPORT">Passport</option>
 							<option value="TRADE_LICENSE">Trade License</option>
 						</Select>
 					</FormField>
-					<FormField label="Document URL" hint="Upload your scanned document and paste the link here.">
-						<Input
-							type="url"
-							placeholder="https://..."
-							value={fileUrl}
-							onChange={e => setFileUrl(e.target.value)}
-						/>
-					</FormField>
-					<Button type="submit" isLoading={isPending} disabled={!fileUrl}>
-						Submit
-					</Button>
-				</form>
+
+					<FileUploadPreview
+						label="Document file"
+						hint="JPEG, PNG, WEBP or PDF, up to 10MB. We review this manually."
+						onConfirm={file => submit({ type, file })}
+					/>
+				</div>
 			)}
 
 			{!!data?.documents.length && (

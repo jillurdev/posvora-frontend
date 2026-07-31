@@ -18,3 +18,15 @@ export function useUpdateProfile() {
 		onError: (err: Error) => toast.error(err.message),
 	});
 }
+
+export function useUploadAvatar() {
+	const { setUser } = useAuth();
+	return useMutation({
+		mutationFn: (file: File) => userApi.uploadAvatar(file),
+		onSuccess: user => {
+			setUser(user);
+			toast.success("Avatar updated");
+		},
+		onError: (err: Error) => toast.error(err.message || "Could not upload avatar"),
+	});
+}

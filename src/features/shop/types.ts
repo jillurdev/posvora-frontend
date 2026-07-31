@@ -7,6 +7,7 @@ export interface Shop {
 	vatNumber?: string | null;
 	currency?: string | null;
 	timezone?: string | null;
+	logoUrl?: string | null;
 	createdAt: string;
 }
 

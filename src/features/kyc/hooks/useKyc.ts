@@ -3,7 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { kycApi } from "../api";
-import type { SubmitKycDocumentPayload } from "../types";
+import type { KycDocumentType } from "../types";
 
 export function useKycDocuments() {
 	return useQuery({ queryKey: ["kyc", "documents"], queryFn: kycApi.listMine });
@@ -12,7 +12,7 @@ export function useKycDocuments() {
 export function useSubmitKycDocument() {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: (payload: SubmitKycDocumentPayload) => kycApi.submit(payload),
+		mutationFn: ({ type, file }: { type: KycDocumentType; file: File }) => kycApi.submit(type, file),
 		onSuccess: () => {
 			qc.invalidateQueries({ queryKey: ["kyc", "documents"] });
 			toast.success("Document submitted — we'll review it shortly");
