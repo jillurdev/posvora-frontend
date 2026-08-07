@@ -3,6 +3,14 @@ import { env } from "@/config/env";
 
 export const metadata = { title: "Verify Receipt" };
 
+interface VerifyItem {
+	productName: string;
+	sku?: string;
+	quantity: number;
+	unitPrice?: number;
+	totalAmount?: number;
+}
+
 interface VerifyResult {
 	valid: boolean;
 	message?: string;
@@ -14,6 +22,7 @@ interface VerifyResult {
 	dueAmount?: number;
 	shopName?: string;
 	branchName?: string;
+	products?: VerifyItem[];
 }
 
 async function getResult(id: string, sig: string | undefined): Promise<VerifyResult> {
@@ -40,8 +49,21 @@ export default async function VerifyReceiptPage({
 	const result = await getResult(id, sig);
 
 	return (
-		<div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
-			<div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+		<div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 p-4">
+			{/* Background watermark */}
+			<div
+				aria-hidden
+				className="pointer-events-none absolute inset-0 z-0 flex select-none items-center justify-center"
+			>
+				<span
+					className="whitespace-nowrap text-[18vw] font-extrabold tracking-widest text-slate-900/[0.04]"
+					style={{ transform: "rotate(-30deg)" }}
+				>
+					POSVORA
+				</span>
+			</div>
+
+			<div className="relative z-10 w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
 				{result.valid ? (
 					<>
 						<CheckCircle2 className="mx-auto mb-3 h-14 w-14 text-emerald-500" />
@@ -59,6 +81,25 @@ export default async function VerifyReceiptPage({
 								<Row label="Due" value={formatBDT(result.dueAmount!)} highlight />
 							)}
 						</div>
+
+						{!!result.products?.length && (
+							<div className="mt-4 rounded-xl border border-slate-200 p-4 text-left text-sm">
+								<p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Items</p>
+								<div className="space-y-2">
+									{result.products.map((item, idx) => (
+										<div key={idx} className="flex items-start justify-between gap-2">
+											<span className="text-slate-700">
+												{item.productName}
+												<span className="ml-1 text-xs text-slate-400">× {item.quantity}</span>
+											</span>
+											{item.totalAmount !== undefined && (
+												<span className="shrink-0 font-medium text-slate-900">{formatBDT(item.totalAmount)}</span>
+											)}
+										</div>
+									))}
+								</div>
+							</div>
+						)}
 					</>
 				) : (
 					<>
