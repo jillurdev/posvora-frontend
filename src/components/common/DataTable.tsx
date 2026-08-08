@@ -17,9 +17,18 @@ interface DataTableProps<T> {
 	emptyTitle?: string;
 	emptyDescription?: string;
 	rowKey: (row: T) => string;
+	onRowClick?: (row: T) => void;
 }
 
-export function DataTable<T>({ columns, data, isLoading, emptyTitle = "No records found", emptyDescription, rowKey }: DataTableProps<T>) {
+export function DataTable<T>({
+	columns,
+	data,
+	isLoading,
+	emptyTitle = "No records found",
+	emptyDescription,
+	rowKey,
+	onRowClick,
+}: DataTableProps<T>) {
 	if (isLoading) return <Spinner />;
 	if (!data || data.length === 0) return <EmptyState title={emptyTitle} description={emptyDescription} />;
 
@@ -37,7 +46,11 @@ export function DataTable<T>({ columns, data, isLoading, emptyTitle = "No record
 				</thead>
 				<tbody className="divide-y divide-slate-100">
 					{data.map(row => (
-						<tr key={rowKey(row)} className="hover:bg-slate-50/60">
+						<tr
+							key={rowKey(row)}
+							onClick={onRowClick ? () => onRowClick(row) : undefined}
+							className={`hover:bg-slate-50/60 ${onRowClick ? "cursor-pointer" : ""}`}
+						>
 							{columns.map(col => (
 								<td key={col.header} className={`px-4 py-3 text-slate-700 ${col.className ?? ""}`}>
 									{col.accessor(row)}

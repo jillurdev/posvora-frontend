@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Phone, MapPin, Send, CheckCircle2 } from "lucide-react";
+import { Mail, MapPin, Send, CheckCircle2 } from "lucide-react";
 import { TextField, TextareaField } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
@@ -54,13 +54,6 @@ export default function ContactPage() {
 							<div>
 								<p className="text-sm font-medium text-slate-900">Email</p>
 								<p className="text-sm text-slate-500">support@posvora.com</p>
-							</div>
-						</div>
-						<div className="flex items-start gap-3">
-							<Phone className="mt-0.5 h-5 w-5 text-slate-400" />
-							<div>
-								<p className="text-sm font-medium text-slate-900">Phone</p>
-								<p className="text-sm text-slate-500">+880 1XXX-XXXXXX</p>
 							</div>
 						</div>
 						<div className="flex items-start gap-3">
