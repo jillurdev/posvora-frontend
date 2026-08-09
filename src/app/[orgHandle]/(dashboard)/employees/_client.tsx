@@ -21,9 +21,10 @@ import {
 
 import type { Employee, EmployeePayload } from "@/features/employee/types";
 
-import { formatMoney } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/useCurrency";
 
 export default function EmployeesPage() {
+	const formatMoney = useFormatMoney();
 	const { activeShopId, shops } = useActiveShop();
 
 	const { data, isLoading } = useEmployees({

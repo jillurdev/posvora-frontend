@@ -7,7 +7,14 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatMoney(amount: number | string, currency = "BDT") {
 	const value = typeof amount === "string" ? Number(amount) : amount;
-	return new Intl.NumberFormat("en-BD", { style: "currency", currency }).format(value || 0);
+	try {
+		return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(value || 0);
+	} catch {
+		// An invalid/unsupported ISO 4217 currency code was stored (e.g. a
+		// typo when a shop's settings were configured) — fail soft with a
+		// plain number instead of crashing the page.
+		return `${currency} ${(value || 0).toFixed(2)}`;
+	}
 }
 
 export function formatDate(date: string | Date) {

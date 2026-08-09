@@ -17,9 +17,10 @@ import { useProducts, useDeleteProduct } from "@/features/product/hooks/useProdu
 import { ProductModal } from "@/features/product/components/ProductModal";
 import { CatalogQuickAdd } from "@/features/product/components/CatalogQuickAdd";
 import type { Product } from "@/features/product/types";
-import { formatMoney } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/useCurrency";
 
 export default function ProductsPage() {
+	const formatMoney = useFormatMoney();
 	const { activeShopId, shops, isLoading: shopsLoading } = useActiveShop();
 	const { page, limit, setPage } = usePagination(10);
 	const [search, setSearch] = useState("");

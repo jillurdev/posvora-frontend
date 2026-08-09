@@ -6,7 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useActiveShop } from "@/context/ActiveShopContext";
 import { useDashboardSummary } from "@/features/organization/hooks/useOrganization";
 import { ROLE_LABELS } from "@/lib/permissions";
-import { formatMoney } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/useCurrency";
 
 function StatCard({
 	label,
@@ -33,6 +33,7 @@ function StatCard({
 }
 
 export default function DashboardPage() {
+	const formatMoney = useFormatMoney();
 	const { user } = useAuth();
 	const { shops } = useActiveShop();
 	const { data: summary, isLoading, isError } = useDashboardSummary();

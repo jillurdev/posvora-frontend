@@ -12,9 +12,11 @@ import { useActiveShop } from "@/context/ActiveShopContext";
 import { useBranches } from "@/features/branch/hooks/useBranches";
 import { useAccounts, useExpenseCategories, useExpenses, useCreateExpense } from "@/features/accounting/hooks/useAccounting";
 import type { Account, Expense } from "@/features/accounting/types";
-import { formatMoney, formatDate } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/useCurrency";
 
 export default function AccountingPage() {
+	const formatMoney = useFormatMoney();
 	const { activeShopId, shops } = useActiveShop();
 	const { data: branches = [] } = useBranches();
 	const { data: accounts = [] } = useAccounts(activeShopId ?? undefined);

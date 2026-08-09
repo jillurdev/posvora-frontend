@@ -22,6 +22,7 @@ interface VerifyResult {
 	dueAmount?: number;
 	shopName?: string;
 	branchName?: string;
+	currency?: string;
 	products?: VerifyItem[];
 }
 
@@ -73,12 +74,12 @@ export default async function VerifyReceiptPage({
 						<div className="mt-5 space-y-2 rounded-xl bg-slate-50 p-4 text-left text-sm">
 							<Row label="Invoice No." value={result.invoiceNo} />
 							<Row label="Branch" value={result.branchName} />
-							<Row label="Date" value={result.date ? new Date(result.date).toLocaleString("en-GB") : undefined} />
+							<Row label="Date" value={result.date ? new Date(result.date).toLocaleString() : undefined} />
 							<Row label="Status" value={result.status} />
-							<Row label="Total" value={result.totalAmount !== undefined ? formatBDT(result.totalAmount) : undefined} />
-							<Row label="Paid" value={result.paidAmount !== undefined ? formatBDT(result.paidAmount) : undefined} />
+							<Row label="Total" value={result.totalAmount !== undefined ? formatMoney(result.totalAmount, result.currency) : undefined} />
+							<Row label="Paid" value={result.paidAmount !== undefined ? formatMoney(result.paidAmount, result.currency) : undefined} />
 							{Number(result.dueAmount ?? 0) > 0 && (
-								<Row label="Due" value={formatBDT(result.dueAmount!)} highlight />
+								<Row label="Due" value={formatMoney(result.dueAmount!, result.currency)} highlight />
 							)}
 						</div>
 
@@ -93,7 +94,7 @@ export default async function VerifyReceiptPage({
 												<span className="ml-1 text-xs text-slate-400">× {item.quantity}</span>
 											</span>
 											{item.totalAmount !== undefined && (
-												<span className="shrink-0 font-medium text-slate-900">{formatBDT(item.totalAmount)}</span>
+												<span className="shrink-0 font-medium text-slate-900">{formatMoney(item.totalAmount, result.currency)}</span>
 											)}
 										</div>
 									))}
@@ -125,6 +126,10 @@ function Row({ label, value, highlight }: { label: string; value?: string; highl
 	);
 }
 
-function formatBDT(amount: number) {
-	return new Intl.NumberFormat("en-BD", { style: "currency", currency: "BDT" }).format(Number(amount) || 0);
+function formatMoney(amount: number, currency = "BDT") {
+	try {
+		return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(Number(amount) || 0);
+	} catch {
+		return `${currency} ${(Number(amount) || 0).toFixed(2)}`;
+	}
 }

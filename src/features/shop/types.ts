@@ -5,6 +5,7 @@ export interface Shop {
 	address?: string | null;
 	bin?: string | null;
 	vatNumber?: string | null;
+	country?: string | null;
 	currency?: string | null;
 	timezone?: string | null;
 	logoUrl?: string | null;
@@ -16,6 +17,7 @@ export interface ShopPayload {
 	address?: string;
 	bin?: string;
 	vatNumber?: string;
+	country?: string;
 	currency?: string;
 	timezone?: string;
 	slug?: string;

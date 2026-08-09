@@ -19,7 +19,10 @@ import { useCreateSale, useResumeSale, useSale } from "@/features/sales/hooks/us
 import { ReceiptModal } from "@/features/sales/components/ReceiptModal";
 import type { Product } from "@/features/product/types";
 import type { SalePaymentMethod, Sale } from "@/features/sales/types";
-import { formatMoney } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/useCurrency";
+
+import { useFormatMoney, useCountry } from "@/hooks/useCurrency";
+import { getPaymentMethods } from "@/lib/paymentMethods";
 
 interface CartLine {
 	key: string;
@@ -32,18 +35,13 @@ interface CartLine {
 	discountAmount: number;
 }
 
-const PAYMENT_METHODS: { value: SalePaymentMethod; label: string }[] = [
-	{ value: "CASH", label: "Cash" },
-	{ value: "CARD", label: "Card" },
-	{ value: "BKASH", label: "bKash" },
-	{ value: "NAGAD", label: "Nagad" },
-	{ value: "ROCKET", label: "Rocket" },
-	{ value: "UPAY", label: "Upay" },
-	{ value: "BANK_TRANSFER", label: "Bank Transfer" },
-	{ value: "DUE", label: "Due (pay later)" },
-];
-
 export default function PosPage() {
+	const formatMoney = useFormatMoney();
+	const country = useCountry();
+	const PAYMENT_METHODS = getPaymentMethods(country, [{ value: "DUE", label: "Due (pay later)" }]) as {
+		value: SalePaymentMethod;
+		label: string;
+	}[];
 	const router = useRouter();
 	const { orgHandle } = useParams<{ orgHandle: string }>();
 	const searchParams = useSearchParams();

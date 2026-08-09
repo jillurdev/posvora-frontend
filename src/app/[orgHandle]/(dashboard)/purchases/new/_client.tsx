@@ -15,7 +15,7 @@ import { useProducts } from "@/features/product/hooks/useProducts";
 import { useSuppliers, useCreateSupplier } from "@/features/supplier/hooks/useSuppliers";
 import { useCreatePurchase } from "@/features/purchase/hooks/usePurchases";
 import type { Product } from "@/features/product/types";
-import { formatMoney } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/useCurrency";
 
 interface PurchaseLine {
 	key: string;
@@ -28,6 +28,7 @@ interface PurchaseLine {
 }
 
 export default function NewPurchasePage() {
+	const formatMoney = useFormatMoney();
 	const router = useRouter();
 	const { orgHandle } = useParams<{ orgHandle: string }>();
 	const { activeShopId } = useActiveShop();

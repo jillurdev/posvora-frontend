@@ -56,7 +56,7 @@ export function RegisterForm() {
 					<Input type="email" placeholder="you@company.com" {...register("email")} />
 				</FormField>
 				<FormField label="Phone" error={errors.phone?.message}>
-					<Input placeholder="+8801XXXXXXXXX" {...register("phone")} />
+					<Input placeholder="+1 555 123 4567" {...register("phone")} />
 				</FormField>
 				<FormField label="Password" error={errors.password?.message} required>
 					<Input type="password" placeholder="••••••••" {...register("password")} />

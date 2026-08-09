@@ -16,7 +16,8 @@ import { useBranches } from "@/features/branch/hooks/useBranches";
 import { usePagination } from "@/hooks/usePagination";
 import { useSales, useOpenReceipt } from "@/features/sales/hooks/useSales";
 import type { Sale } from "@/features/sales/types";
-import { formatMoney, formatDateTime } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/useCurrency";
 
 const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "default"> = {
 	COMPLETED: "success",
@@ -29,6 +30,7 @@ const STATUS_TONE: Record<string, "success" | "warning" | "danger" | "default"> 
 };
 
 export default function SalesPage() {
+	const formatMoney = useFormatMoney();
 	const router = useRouter();
 	const { orgHandle } = useParams<{ orgHandle: string }>();
 	const { activeShopId, shops } = useActiveShop();

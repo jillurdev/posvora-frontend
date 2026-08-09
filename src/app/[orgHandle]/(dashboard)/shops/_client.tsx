@@ -12,6 +12,7 @@ import { TextField, SelectField } from "@/components/ui/Field";
 import { useShops, useCreateShop, useUpdateShop, useDeleteShop } from "@/features/shop/hooks/useShops";
 import type { Shop, ShopPayload } from "@/features/shop/types";
 import { CURRENCIES } from "@/lib/currencies";
+import { COUNTRIES } from "@/lib/countries";
 
 export default function ShopsPage() {
 	const { data: shops = [], isLoading } = useShops();
@@ -22,11 +23,11 @@ export default function ShopsPage() {
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editing, setEditing] = useState<Shop | null>(null);
 
-	const { register, handleSubmit, reset } = useForm<ShopPayload>();
+	const { register, handleSubmit, reset, setValue } = useForm<ShopPayload>();
 
 	const openCreate = () => {
 		setEditing(null);
-		reset({ name: "", address: "", bin: "", vatNumber: "", currency: "BDT", timezone: "" });
+		reset({ name: "", address: "", bin: "", vatNumber: "", country: "BD", currency: "BDT", timezone: "" });
 		setModalOpen(true);
 	};
 
@@ -37,11 +38,23 @@ export default function ShopsPage() {
 			address: shop.address ?? "",
 			bin: shop.bin ?? "",
 			vatNumber: shop.vatNumber ?? "",
+			country: shop.country ?? "BD",
 			currency: shop.currency ?? "BDT",
 			timezone: shop.timezone ?? "",
 			slug: shop.slug ?? "",
 		});
 		setModalOpen(true);
+	};
+
+	// Only on NEW shops: picking a country pre-fills a sensible default
+	// currency, saving a step — but never overrides an existing shop's
+	// already-configured currency when editing.
+	const handleCountryChange = (code: string) => {
+		setValue("country", code);
+		if (!editing) {
+			const match = COUNTRIES.find(c => c.code === code);
+			if (match) setValue("currency", match.defaultCurrency);
+		}
 	};
 
 	const onSubmit = (values: ShopPayload) => {
@@ -74,9 +87,9 @@ export default function ShopsPage() {
 					"—"
 				),
 		},
-		{ header: "Address", accessor: s => s.address ?? "—" },
+		{ header: "Country", accessor: s => COUNTRIES.find(c => c.code === s.country)?.label ?? s.country ?? "—" },
 		{ header: "Currency", accessor: s => s.currency ?? "—" },
-		{ header: "VAT / BIN", accessor: s => s.vatNumber || s.bin || "—" },
+		{ header: "VAT / Reg. No.", accessor: s => s.vatNumber || s.bin || "—" },
 		{
 			header: "",
 			accessor: s => (
@@ -116,17 +129,31 @@ export default function ShopsPage() {
 					)}
 					<TextField id="shop-address" label="Address" {...register("address")} />
 					<div className="grid grid-cols-2 gap-4">
-						<TextField id="shop-bin" label="BIN" {...register("bin")} />
-						<TextField id="shop-vat" label="VAT number" {...register("vatNumber")} />
+						<TextField id="shop-bin" label="Business Reg. No. (optional)" {...register("bin")} />
+						<TextField id="shop-vat" label="VAT / Tax ID (optional)" {...register("vatNumber")} />
 					</div>
 					<div className="grid grid-cols-2 gap-4">
+						<SelectField
+							id="shop-country"
+							label="Country"
+							defaultValue="BD"
+							{...register("country")}
+							onChange={e => handleCountryChange(e.target.value)}
+						>
+							{COUNTRIES.map(c => (
+								<option key={c.code} value={c.code}>{c.label}</option>
+							))}
+						</SelectField>
 						<SelectField id="shop-currency" label="Currency" defaultValue="BDT" {...register("currency")}>
 							{CURRENCIES.map(c => (
 								<option key={c.code} value={c.code}>{c.label}</option>
 							))}
 						</SelectField>
-						<TextField id="shop-timezone" label="Timezone" placeholder="Asia/Dhaka" {...register("timezone")} />
 					</div>
+					<TextField id="shop-timezone" label="Timezone" placeholder="Asia/Dhaka" {...register("timezone")} />
+					<p className="text-xs text-slate-400">
+						Country determines which local payment methods (e.g. mobile wallets) show up at checkout for this shop.
+					</p>
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="outline" onClick={() => { setModalOpen(false); setEditing(null); }}>Cancel</Button>
 						<Button type="submit" isLoading={createShop.isPending || updateShop.isPending}>Save</Button>

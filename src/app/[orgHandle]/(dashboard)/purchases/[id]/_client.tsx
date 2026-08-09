@@ -15,7 +15,9 @@ import { Modal } from "@/components/ui/Modal";
 import { useWarehouses } from "@/features/warehouse/hooks/useWarehouses";
 import { usePurchase, useReceivePurchase, useAddPurchasePayment } from "@/features/purchase/hooks/usePurchases";
 import type { PurchasePaymentMethod, PurchaseStatus } from "@/features/purchase/types";
-import { formatMoney, formatDateTime } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
+import { useFormatMoney, useCountry } from "@/hooks/useCurrency";
+import { getPaymentMethods } from "@/lib/paymentMethods";
 
 const STATUS_TONE: Record<PurchaseStatus, "success" | "warning" | "danger" | "default"> = {
 	REQUESTED: "default",
@@ -27,18 +29,12 @@ const STATUS_TONE: Record<PurchaseStatus, "success" | "warning" | "danger" | "de
 	CANCELLED: "danger",
 };
 
-const PAYMENT_METHODS: { value: PurchasePaymentMethod; label: string }[] = [
-	{ value: "CASH", label: "Cash" },
-	{ value: "CARD", label: "Card" },
-	{ value: "BKASH", label: "bKash" },
-	{ value: "NAGAD", label: "Nagad" },
-	{ value: "ROCKET", label: "Rocket" },
-	{ value: "UPAY", label: "Upay" },
-	{ value: "BANK_TRANSFER", label: "Bank Transfer" },
-	{ value: "OTHER", label: "Other" },
-];
+const PAYMENT_METHODS_EXTRA: { value: PurchasePaymentMethod; label: string }[] = [{ value: "OTHER", label: "Other" }];
 
 export default function PurchaseDetailPage() {
+	const formatMoney = useFormatMoney();
+	const country = useCountry();
+	const PAYMENT_METHODS = getPaymentMethods(country, PAYMENT_METHODS_EXTRA) as { value: PurchasePaymentMethod; label: string }[];
 	const router = useRouter();
 	const { orgHandle, id } = useParams<{ orgHandle: string; id: string }>();
 	const { data: purchase, isLoading, isError } = usePurchase(id);

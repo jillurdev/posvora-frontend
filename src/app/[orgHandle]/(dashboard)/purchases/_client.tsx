@@ -10,7 +10,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { useBranches } from "@/features/branch/hooks/useBranches";
 import { usePurchases } from "@/features/purchase/hooks/usePurchases";
 import type { Purchase, PurchaseStatus } from "@/features/purchase/types";
-import { formatMoney, formatDateTime } from "@/lib/utils";
+import { formatDateTime } from "@/lib/utils";
+import { useFormatMoney } from "@/hooks/useCurrency";
 
 const STATUS_TONE: Record<PurchaseStatus, "success" | "warning" | "danger" | "default"> = {
 	REQUESTED: "default",
@@ -23,6 +24,7 @@ const STATUS_TONE: Record<PurchaseStatus, "success" | "warning" | "danger" | "de
 };
 
 export default function PurchasesPage() {
+	const formatMoney = useFormatMoney();
 	const router = useRouter();
 	const { orgHandle } = useParams<{ orgHandle: string }>();
 	const { data: branches = [] } = useBranches();
