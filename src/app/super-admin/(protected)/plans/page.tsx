@@ -26,6 +26,7 @@ const emptyForm: CreatePlanPayload = {
 	slug: "",
 	description: "",
 	price: 0,
+	priceUsd: undefined,
 	billingCycle: "MONTHLY",
 	trialDays: 14,
 	branchLimit: 1,
@@ -68,6 +69,7 @@ export default function PlansPage() {
 			slug: plan.slug,
 			description: plan.description ?? "",
 			price: Number(plan.price),
+			priceUsd: plan.priceUsd != null ? Number(plan.priceUsd) : undefined,
 			billingCycle: plan.billingCycle,
 			trialDays: plan.trialDays,
 			branchLimit: plan.branchLimit,
@@ -95,7 +97,11 @@ export default function PlansPage() {
 
 	const columns: Column<Plan>[] = [
 		{ header: "Plan", accessor: p => <span className="font-medium text-slate-900">{p.name}</span> },
-		{ header: "Price", accessor: p => `${formatPrice(p.price)} / ${p.billingCycle.toLowerCase()}` },
+		{
+			header: "Price",
+			accessor: p =>
+				`${formatPrice(p.price)} / ${p.billingCycle.toLowerCase()}${p.priceUsd != null ? ` · $${Number(p.priceUsd).toLocaleString()} intl.` : ""}`,
+		},
 		{ header: "Limits", accessor: p => `${p.branchLimit} branches · ${p.userLimit} staff accounts` },
 		{ header: "Subscribers", accessor: p => p._count?.subscriptions ?? 0 },
 		{
@@ -160,13 +166,24 @@ export default function PlansPage() {
 					<div className="grid grid-cols-2 gap-4">
 						<TextField
 							id="plan-price"
-							label="Price (৳)"
+							label="Price (৳ BDT — Bangladesh)"
 							required
 							type="number"
 							min={0}
 							value={form.price}
 							onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
 						/>
+						<TextField
+							id="plan-price-usd"
+							label="Price ($ USD — international, optional)"
+							type="number"
+							min={0}
+							hint="Leave blank to keep this plan Bangladesh-only for now."
+							value={form.priceUsd ?? ""}
+							onChange={e => setForm(f => ({ ...f, priceUsd: e.target.value === "" ? undefined : Number(e.target.value) }))}
+						/>
+					</div>
+					<div className="grid grid-cols-2 gap-4">
 						<SelectField
 							id="plan-billing-cycle"
 							label="Billing cycle"

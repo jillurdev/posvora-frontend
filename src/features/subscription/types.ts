@@ -3,6 +3,9 @@ export interface Plan {
 	name: string;
 	slug: string;
 	price: number;
+	// USD price for Stripe checkout (international orgs). Undefined/null
+	// means this plan isn't purchasable outside Bangladesh yet.
+	priceUsd?: number | null;
 	billingCycle: "MONTHLY" | "YEARLY";
 	trialDays?: number;
 	branchLimit?: number;
@@ -10,6 +13,17 @@ export interface Plan {
 	storageLimitMb?: number;
 	apiLimitPerDay?: number;
 	features?: string[];
+}
+
+export interface Invoice {
+	id: string;
+	amount: number;
+	currency: string;
+	status: string;
+	paymentMethod?: string | null;
+	createdAt: string;
+	paidAt?: string | null;
+	plan?: { name: string } | null;
 }
 
 export interface Subscription {
@@ -23,11 +37,15 @@ export interface Subscription {
 	scheduledEffectiveAt?: string | null;
 	creditBalance?: number;
 	plan?: Plan;
+	invoices?: Invoice[];
 }
 
 export interface MySubscription {
 	subscription: Subscription | null;
 	hasUsedTrial: boolean;
+	// The organization's ISO country code — decides whether pricing here
+	// (and at checkout) is in BDT via SSLCommerz or USD via Stripe.
+	country: string;
 }
 
 export interface CheckoutResult {
@@ -49,4 +67,6 @@ export interface DurationQuote {
 	creditAmount: number;
 	amount: number;
 	monthlyRate: number;
+	currency: string;
+	unavailable?: boolean;
 }

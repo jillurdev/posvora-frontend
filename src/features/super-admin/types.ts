@@ -61,6 +61,9 @@ export interface Plan {
 	slug: string;
 	description?: string | null;
 	price: string | number;
+	// USD price for Stripe checkout by organizations outside Bangladesh.
+	// Null/undefined means this plan isn't purchasable internationally yet.
+	priceUsd?: string | number | null;
 	billingCycle: "MONTHLY" | "YEARLY";
 	trialDays: number;
 	branchLimit: number;
@@ -78,6 +81,7 @@ export interface CreatePlanPayload {
 	slug: string;
 	description?: string;
 	price: number;
+	priceUsd?: number;
 	billingCycle: "MONTHLY" | "YEARLY";
 	trialDays?: number;
 	branchLimit?: number;

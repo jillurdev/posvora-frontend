@@ -12,6 +12,7 @@ export interface RegisterPayload {
 	phone?: string;
 	organizationName: string;
 	businessType: string;
+	country?: string;
 }
 
 export interface ChangePasswordPayload {

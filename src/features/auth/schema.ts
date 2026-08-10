@@ -13,6 +13,7 @@ export const registerSchema = z.object({
 	phone: z.string().optional(),
 	organizationName: z.string().min(2, "Business name is required"),
 	businessType: z.string().min(1, "Select a business type"),
+	country: z.string().optional(),
 });
 export type RegisterFormValues = z.infer<typeof registerSchema>;
 

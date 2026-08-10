@@ -9,6 +9,7 @@ import { useRegister } from "../hooks/useRegister";
 import { FormField } from "@/components/ui/FormField";
 import { Input, Select } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { COUNTRIES } from "@/lib/countries";
 
 const BUSINESS_TYPES = ["RETAIL", "RESTAURANT", "PHARMACY", "GROCERY", "WHOLESALE", "SERVICE", "OTHER"];
 
@@ -48,6 +49,15 @@ export function RegisterForm() {
 						{BUSINESS_TYPES.map(t => (
 							<option key={t} value={t}>
 								{t.charAt(0) + t.slice(1).toLowerCase()}
+							</option>
+						))}
+					</Select>
+				</FormField>
+				<FormField label="Country" error={errors.country?.message} required>
+					<Select {...register("country")} defaultValue="BD">
+						{COUNTRIES.map(c => (
+							<option key={c.code} value={c.code}>
+								{c.label}
 							</option>
 						))}
 					</Select>

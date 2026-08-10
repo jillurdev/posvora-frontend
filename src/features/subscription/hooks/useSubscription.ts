@@ -2,17 +2,17 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { subscriptionApi } from "../api";
+import { subscriptionApi, type PaymentGateway } from "../api";
 import type { CheckoutResult } from "../types";
 
 export function usePlans() {
 	return useQuery({ queryKey: ["plans"], queryFn: subscriptionApi.plans });
 }
 
-export function usePlanQuote(planId: string | undefined, durationMonths: number | undefined) {
+export function usePlanQuote(planId: string | undefined, durationMonths: number | undefined, gateway?: PaymentGateway) {
 	return useQuery({
-		queryKey: ["subscription", "quote", planId, durationMonths],
-		queryFn: () => subscriptionApi.quote(planId!, durationMonths),
+		queryKey: ["subscription", "quote", planId, durationMonths, gateway],
+		queryFn: () => subscriptionApi.quote(planId!, durationMonths, gateway),
 		enabled: !!planId,
 	});
 }
@@ -23,15 +23,15 @@ export function useMySubscription() {
 
 /**
  * Kicks off a plan change. The caller must branch on the result:
- *  - `requiresPayment` -> redirect the browser to `gatewayUrl` (SSLCommerz).
+ *  - `requiresPayment` -> redirect the browser to `gatewayUrl` (SSLCommerz or Stripe, whichever the customer picked).
  *  - `scheduled` -> nothing to pay now, the plan switches at `effectiveAt`.
  *  - neither -> a free trial was activated immediately.
  */
 export function useCheckout() {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: ({ planId, durationMonths }: { planId: string; durationMonths?: number }) =>
-			subscriptionApi.checkout(planId, durationMonths),
+		mutationFn: ({ planId, durationMonths, gateway }: { planId: string; durationMonths?: number; gateway?: PaymentGateway }) =>
+			subscriptionApi.checkout(planId, durationMonths, gateway),
 		onSuccess: (result: CheckoutResult) => {
 			if (result.requiresPayment && result.gatewayUrl) {
 				window.location.href = result.gatewayUrl;

@@ -13,6 +13,7 @@ import { DurationPickerModal } from "@/features/subscription/components/Duration
 import { ConfirmPlanActionModal } from "@/features/subscription/components/ConfirmPlanActionModal";
 import { getRenewalWarning, isSubscriptionCurrentlyActive, isTrialEligible, planLimitLines } from "@/features/subscription/utils";
 import type { Plan } from "@/features/subscription/types";
+import type { PaymentGateway } from "@/features/subscription/api";
 import { formatMoney, formatDate } from "@/lib/utils";
 
 type PendingConfirm = { plan: Plan; kind: "trial" | "free-immediate" | "free-scheduled" };
@@ -22,6 +23,8 @@ export default function SubscriptionPage() {
 	const { data: me } = useMySubscription();
 	const subscription = me?.subscription ?? null;
 	const hasUsedTrial = me?.hasUsedTrial ?? false;
+	const orgCountry = me?.country ?? "BD";
+	const isIntl = orgCountry !== "BD";
 	const checkout = useCheckout();
 	const router = useRouter();
 	const searchParams = useSearchParams();
@@ -165,6 +168,15 @@ export default function SubscriptionPage() {
 						const trialEligible = isTrialEligible(plan, subscription, hasUsedTrial);
 						const activeOnTrial = active && isTrialing;
 
+						// Everyone can always pay in BDT via SSLCommerz, regardless of
+						// their own country — Stripe/USD is simply an additional option
+						// when this plan has international pricing set. So the teaser
+						// price here shows USD only when available; otherwise it falls
+						// back to BDT, which is never unavailable. The actual choice of
+						// which to pay with happens in the duration/payment picker.
+						const showUsd = isIntl && !isFree && plan.priceUsd != null;
+						const displayPrice = showUsd ? plan.priceUsd : plan.price;
+
 						let label = "Subscribe";
 						if (active) label = "Current plan";
 						else if (isScheduled) label = "Scheduled";
@@ -185,9 +197,15 @@ export default function SubscriptionPage() {
 									<p className="mt-0.5 text-xs text-amber-600">Switching to {subscription.scheduledPlan.name} soon</p>
 								)}
 								<p className="mt-2 text-2xl font-semibold text-slate-900">
-									{formatMoney(plan.price)}
+									{formatMoney(displayPrice ?? 0, showUsd ? "USD" : "BDT")}
 									<span className="text-sm font-normal text-slate-400"> /{plan.billingCycle?.toLowerCase()}</span>
 								</p>
+								{!isFree && plan.priceUsd != null && (
+									<p className="mt-0.5 text-xs text-slate-400">
+										or {formatMoney(showUsd ? plan.price : plan.priceUsd, showUsd ? "BDT" : "USD")} via{" "}
+										{showUsd ? "SSLCommerz" : "Stripe"}
+									</p>
+								)}
 								{!isFree && plan.trialDays ? (
 									<p className={`mt-1 text-xs ${trialEligible ? "font-medium text-emerald-600" : "text-slate-400"}`}>
 										{activeOnTrial
@@ -230,6 +248,40 @@ export default function SubscriptionPage() {
 				</div>
 			)}
 
+			{!!subscription?.invoices?.length && (
+				<div className="mt-8">
+					<h3 className="mb-3 text-sm font-semibold text-slate-700">Billing history</h3>
+					<div className="overflow-hidden rounded-xl border border-slate-200">
+						<table className="w-full text-left text-sm">
+							<thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+								<tr>
+									<th className="px-4 py-2.5 font-medium">Date</th>
+									<th className="px-4 py-2.5 font-medium">Plan</th>
+									<th className="px-4 py-2.5 font-medium">Method</th>
+									<th className="px-4 py-2.5 font-medium">Amount</th>
+									<th className="px-4 py-2.5 font-medium">Status</th>
+								</tr>
+							</thead>
+							<tbody className="divide-y divide-slate-100">
+								{subscription.invoices.map(inv => (
+									<tr key={inv.id}>
+										<td className="px-4 py-2.5 text-slate-600">{formatDate(inv.paidAt ?? inv.createdAt)}</td>
+										<td className="px-4 py-2.5 text-slate-700">{inv.plan?.name ?? "—"}</td>
+										<td className="px-4 py-2.5 text-slate-500">{inv.paymentMethod ?? "—"}</td>
+										<td className="px-4 py-2.5 font-medium text-slate-900">{formatMoney(inv.amount, inv.currency)}</td>
+										<td className="px-4 py-2.5">
+											<Badge tone={inv.status === "PAID" ? "success" : inv.status === "UNPAID" ? "warning" : "danger"}>
+												{inv.status}
+											</Badge>
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			)}
+
 			<p className="mt-6 text-xs text-slate-400">
 				&quot;Staff accounts&quot; are the people who log in to run your business — cashiers, managers, etc. — not your
 				shop&apos;s customers, who are unlimited on every plan. Plans with a free trial never ask for payment up front.
@@ -243,9 +295,10 @@ export default function SubscriptionPage() {
 				plan={pickingPlan}
 				onClose={() => setPickingPlan(null)}
 				isSubmitting={checkout.isPending}
-				onConfirm={durationMonths => {
+				defaultGateway={(orgCountry === "BD" ? "SSLCOMMERZ" : "STRIPE") as PaymentGateway}
+				onConfirm={(durationMonths, gateway) => {
 					if (!pickingPlan) return;
-					checkout.mutate({ planId: pickingPlan.id, durationMonths });
+					checkout.mutate({ planId: pickingPlan.id, durationMonths, gateway });
 					setPickingPlan(null);
 				}}
 			/>
