@@ -6,7 +6,9 @@ import type {
 	CreateProductPayload,
 	ListProductsQuery,
 	Product,
+	ProductPrice,
 	Unit,
+	UpsertProductPricePayload,
 } from "./types";
 
 export const productApi = {
@@ -32,4 +34,11 @@ export const productApi = {
 	update: (id: string, payload: Partial<CreateProductPayload>) =>
 		httpClient.patch<Product>(`/products/${id}`, payload),
 	remove: (id: string) => httpClient.delete(`/products/${id}`),
+
+	// Multi-currency pricing
+	listPrices: (productId: string) => httpClient.get<ProductPrice[]>(`/products/${productId}/prices`),
+	upsertPrice: (productId: string, payload: UpsertProductPricePayload) =>
+		httpClient.post<ProductPrice>(`/products/${productId}/prices`, payload),
+	removePrice: (productId: string, currencyCode: string) =>
+		httpClient.delete(`/products/${productId}/prices/${currencyCode}`),
 };

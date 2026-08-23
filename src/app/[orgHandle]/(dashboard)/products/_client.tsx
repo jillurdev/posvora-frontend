@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Coins } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { SearchInput } from "@/components/common/SearchInput";
 import { DataTable, type Column } from "@/components/common/DataTable";
@@ -15,6 +15,7 @@ import { useActiveShop } from "@/context/ActiveShopContext";
 import { usePagination } from "@/hooks/usePagination";
 import { useProducts, useDeleteProduct } from "@/features/product/hooks/useProducts";
 import { ProductModal } from "@/features/product/components/ProductModal";
+import { ProductPricesModal } from "@/features/product/components/ProductPricesModal";
 import { CatalogQuickAdd } from "@/features/product/components/CatalogQuickAdd";
 import type { Product } from "@/features/product/types";
 import { useFormatMoney } from "@/hooks/useCurrency";
@@ -27,6 +28,7 @@ export default function ProductsPage() {
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 	const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
+	const [pricingProduct, setPricingProduct] = useState<Product | null>(null);
 	const deleteProduct = useDeleteProduct();
 
 	const { data, isLoading } = useProducts({
@@ -75,6 +77,13 @@ export default function ProductsPage() {
 			header: "",
 			accessor: p => (
 				<div className="flex items-center gap-1">
+					<button
+						onClick={() => setPricingProduct(p)}
+						className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+						title="Multi-currency prices"
+					>
+						<Coins className="h-4 w-4" />
+					</button>
 					<button
 						onClick={() => openEdit(p)}
 						className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
@@ -138,6 +147,8 @@ export default function ProductsPage() {
 					editingProduct={editingProduct}
 				/>
 			)}
+
+			<ProductPricesModal product={pricingProduct} open={!!pricingProduct} onClose={() => setPricingProduct(null)} />
 
 			<Modal open={!!deletingProduct} onClose={() => setDeletingProduct(null)} title="Remove this product?" size="sm">
 				<div className="space-y-5">

@@ -57,6 +57,27 @@ export interface Product {
 	stockAlertQty?: number | null;
 	variants?: ProductVariant[];
 	createdAt: string;
+	/** Per-currency price overrides — see ProductPrice on the backend. */
+	prices?: ProductPrice[];
+}
+
+export interface ProductPrice {
+	id: string;
+	productId: string;
+	currencyCode: string;
+	sellingPrice: number;
+	wholesalePrice?: number | null;
+	dealerPrice?: number | null;
+	corporatePrice?: number | null;
+	isActive: boolean;
+}
+
+export interface UpsertProductPricePayload {
+	currencyCode: string;
+	sellingPrice: number;
+	wholesalePrice?: number;
+	dealerPrice?: number;
+	corporatePrice?: number;
 }
 
 export interface CreateProductPayload {
