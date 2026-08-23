@@ -5,10 +5,19 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export function formatMoney(amount: number | string, currency = "BDT") {
+export function formatMoney(
+	amount: number | string,
+	currency = "BDT",
+	options?: { locale?: string; minimumFractionDigits?: number; maximumFractionDigits?: number },
+) {
 	const value = typeof amount === "string" ? Number(amount) : amount;
 	try {
-		return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(value || 0);
+		return new Intl.NumberFormat(options?.locale, {
+			style: "currency",
+			currency,
+			minimumFractionDigits: options?.minimumFractionDigits,
+			maximumFractionDigits: options?.maximumFractionDigits,
+		}).format(value || 0);
 	} catch {
 		// An invalid/unsupported ISO 4217 currency code was stored (e.g. a
 		// typo when a shop's settings were configured) — fail soft with a
@@ -31,4 +40,12 @@ export function formatDateTime(date: string | Date) {
 		hour: "2-digit",
 		minute: "2-digit",
 	}).format(new Date(date));
+}
+
+
+/** Exact-rate multiplication helper for display/reporting conversions. Financial posting must persist the rate used. */
+export function convertMoney(amount: number | string, rate: number | string): number {
+	const value = typeof amount === "string" ? Number(amount) : amount;
+	const fx = typeof rate === "string" ? Number(rate) : rate;
+	return Number.isFinite(value) && Number.isFinite(fx) ? value * fx : 0;
 }
