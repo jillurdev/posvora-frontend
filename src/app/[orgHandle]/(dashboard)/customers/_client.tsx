@@ -49,6 +49,22 @@ export default function CustomersPage() {
 		{ header: "Email", accessor: c => c.email ?? "—" },
 		{ header: "Address", accessor: c => c.address ?? "—" },
 		{
+			header: "Due balance",
+			accessor: c => {
+				const balances = Object.entries(c.balancesByCurrency ?? {}).filter(([, amount]) => Math.abs(amount) > 0.005);
+				if (balances.length === 0) return <span className="text-slate-400">—</span>;
+				return (
+					<div className="flex flex-col gap-0.5">
+						{balances.map(([currency, amount]) => (
+							<span key={currency} className={amount > 0 ? "font-medium text-red-600" : "font-medium text-emerald-600"}>
+								{amount > 0 ? "+" : ""}{amount.toFixed(2)} {currency}
+							</span>
+						))}
+					</div>
+				);
+			},
+		},
+		{
 			header: "",
 			accessor: c => (
 				<button onClick={() => deleteCustomer.mutate(c.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">

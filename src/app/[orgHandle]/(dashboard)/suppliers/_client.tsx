@@ -44,6 +44,22 @@ export default function SuppliersPage() {
 		{ header: "Email", accessor: s => s.email ?? "—" },
 		{ header: "Address", accessor: s => s.address ?? "—" },
 		{
+			header: "Due balance",
+			accessor: s => {
+				const balances = Object.entries(s.balancesByCurrency ?? {}).filter(([, amount]) => Math.abs(amount) > 0.005);
+				if (balances.length === 0) return <span className="text-slate-400">—</span>;
+				return (
+					<div className="flex flex-col gap-0.5">
+						{balances.map(([currency, amount]) => (
+							<span key={currency} className={amount > 0 ? "font-medium text-amber-600" : "font-medium text-emerald-600"}>
+								{amount > 0 ? "+" : ""}{amount.toFixed(2)} {currency}
+							</span>
+						))}
+					</div>
+				);
+			},
+		},
+		{
 			header: "",
 			accessor: s => (
 				<button onClick={() => deleteSupplier.mutate(s.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">

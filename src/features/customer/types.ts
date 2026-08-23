@@ -15,6 +15,12 @@ export interface Customer {
 	address?: string | null;
 	groupId?: string | null;
 	createdAt: string;
+	/**
+	 * Ledger-derived outstanding balance per currency (positive = customer
+	 * owes the shop), computed from ReceivableEntry — the accounting source
+	 * of truth. May contain multiple currencies for multi-currency shops.
+	 */
+	balancesByCurrency?: Record<string, number>;
 }
 
 export interface CustomerPayload {

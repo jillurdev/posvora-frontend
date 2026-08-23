@@ -14,6 +14,13 @@ export interface Supplier {
 	address?: string | null;
 	groupId?: string | null;
 	createdAt: string;
+	/**
+	 * Ledger-derived outstanding balance per currency (positive = the shop
+	 * owes the supplier), computed from PayableEntry — the accounting
+	 * source of truth. May contain multiple currencies for multi-currency
+	 * shops.
+	 */
+	balancesByCurrency?: Record<string, number>;
 }
 
 export interface SupplierPayload {
