@@ -127,6 +127,8 @@ export interface BillingSummary {
 	collectedThisMonth: number;
 	outstandingUnpaid: number;
 	totalCollected: number;
+	/** All figures above are converted to this currency (BDT) — see SuperAdminService.toBdt on the backend. */
+	normalizedTo?: string;
 }
 
 export interface AdminInvoice {
@@ -135,6 +137,8 @@ export interface AdminInvoice {
 	creditAmount?: string | number | null;
 	status: string;
 	paymentMethod?: string | null;
+	/** The currency this invoice was actually charged in — BDT (SSLCommerz), USD (Stripe), or INR (Razorpay). Always trust this over assuming BDT. */
+	currency?: string;
 	paidAt?: string | null;
 	periodStart: string;
 	periodEnd: string;

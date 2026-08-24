@@ -12,8 +12,15 @@ import {
 	useMarkInvoicePaid,
 } from "@/features/super-admin/hooks/useSuperAdmin";
 import type { AdminInvoice } from "@/features/super-admin/types";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatMoney } from "@/lib/utils";
 
+// Platform-wide summary cards (MRR, collected, outstanding) are normalized
+// to BDT on the backend (see SuperAdminService.toBdt) — safe to prefix
+// with ৳ unconditionally. Individual invoice rows below are NOT
+// normalized (they show exactly what was charged), so each one must use
+// its own `currency`, not this fixed-BDT helper — an org paying via
+// Stripe/Razorpay has USD/INR invoices, and showing "৳29" for a $29
+// charge would misrepresent what was actually collected.
 function money(n: string | number | undefined | null) {
 	const value = typeof n === "string" ? Number(n) : n ?? 0;
 	return `৳${value.toLocaleString()}`;
@@ -50,7 +57,7 @@ export default function AdminBillingPage() {
 	const columns: Column<AdminInvoice>[] = [
 		{ header: "Organization", accessor: i => i.subscription.organization.name },
 		{ header: "Plan", accessor: i => i.plan?.name ?? "—" },
-		{ header: "Amount", accessor: i => money(i.amount) },
+		{ header: "Amount", accessor: i => formatMoney(i.amount, i.currency || "BDT") },
 		{ header: "Status", accessor: i => <Badge tone={STATUS_TONE[i.status] ?? "default"}>{i.status}</Badge> },
 		{ header: "Method", accessor: i => i.paymentMethod ?? "—" },
 		{ header: "Period", accessor: i => `${formatDate(i.periodStart)} → ${formatDate(i.periodEnd)}` },
