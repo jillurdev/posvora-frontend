@@ -27,26 +27,35 @@ const MAX_YEARS = 5;
 interface DurationPickerModalProps {
 	plan: Plan | null;
 	onClose: () => void;
-	onConfirm: (durationMonths: number, gateway: PaymentGateway) => void;
+	onConfirm: (durationMonths: number | undefined, gateway: PaymentGateway, autoRenew: boolean) => void;
 	isSubmitting?: boolean;
 	// Which gateway to preselect — typically the org's country-based
-	// default (BD -> SSLCommerz, else -> Stripe). The customer can always
-	// switch to the other one below; this is only a starting point, never
-	// a restriction.
+	// default (BD -> SSLCommerz, IN -> Razorpay, else -> Stripe). The
+	// customer can always switch to another option below; this is only a
+	// starting point, never a restriction.
 	defaultGateway?: PaymentGateway;
+	// Offer the Razorpay/INR option — only when this plan has an INR
+	// PlanPrice configured (mirrors the existing stripeAvailable check for
+	// plan.priceUsd below).
+	razorpayAvailable?: boolean;
 }
 
-export function DurationPickerModal({ plan, onClose, onConfirm, isSubmitting, defaultGateway = "SSLCOMMERZ" }: DurationPickerModalProps) {
+export function DurationPickerModal({ plan, onClose, onConfirm, isSubmitting, defaultGateway = "SSLCOMMERZ", razorpayAvailable }: DurationPickerModalProps) {
 	const [months, setMonths] = useState(1);
 	const [customMode, setCustomMode] = useState(false);
 	const [customUnit, setCustomUnit] = useState<"months" | "years">("months");
 	const [customAmount, setCustomAmount] = useState(1);
 	const [gateway, setGateway] = useState<PaymentGateway>(defaultGateway);
+	// Real recurring Stripe billing instead of a fixed-term prepay — see
+	// StripeService.initRecurringCheckoutSession on the backend. Stripe-only,
+	// and mutually exclusive with a chosen duration (the backend rejects
+	// combining them), so picking this hides the duration/discount picker.
+	const [autoRenew, setAutoRenew] = useState(false);
 
 	// Re-sync when a different plan is opened (e.g. the picker's default
 	// should reflect the org's own default each time it's freshly opened).
 	useEffect(() => {
-		if (plan) setGateway(defaultGateway);
+		if (plan) { setGateway(defaultGateway); setAutoRenew(false); }
 	}, [plan?.id, defaultGateway]);
 
 	const { data: quote, isFetching } = usePlanQuote(plan?.id, months, gateway);
@@ -78,12 +87,12 @@ export function DurationPickerModal({ plan, onClose, onConfirm, isSubmitting, de
 			<div className="space-y-4">
 				<p className="text-sm text-slate-500">Choose how long you&apos;d like to prepay for. Longer terms get a discount.</p>
 
-				{stripeAvailable && (
+				{(stripeAvailable || razorpayAvailable) && (
 					<div>
 						<p className="mb-1.5 text-xs font-medium text-slate-500">Pay with</p>
 						<div className="flex gap-2">
 							<button
-								onClick={() => setGateway("SSLCOMMERZ")}
+								onClick={() => { setGateway("SSLCOMMERZ"); setAutoRenew(false); }}
 								className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition ${
 									gateway === "SSLCOMMERZ"
 										? "border-slate-900 bg-slate-900 text-white"
@@ -92,21 +101,53 @@ export function DurationPickerModal({ plan, onClose, onConfirm, isSubmitting, de
 							>
 								৳ BDT — SSLCommerz
 							</button>
-							<button
-								onClick={() => setGateway("STRIPE")}
-								className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition ${
-									gateway === "STRIPE"
-										? "border-slate-900 bg-slate-900 text-white"
-										: "border-slate-200 text-slate-600 hover:border-slate-300"
-								}`}
-							>
-								$ USD — Card (Stripe)
-							</button>
+							{stripeAvailable && (
+								<button
+									onClick={() => setGateway("STRIPE")}
+									className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+										gateway === "STRIPE"
+											? "border-slate-900 bg-slate-900 text-white"
+											: "border-slate-200 text-slate-600 hover:border-slate-300"
+									}`}
+								>
+									$ USD — Card (Stripe)
+								</button>
+							)}
+							{razorpayAvailable && (
+								<button
+									onClick={() => { setGateway("RAZORPAY"); setAutoRenew(false); }}
+									className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition ${
+										gateway === "RAZORPAY"
+											? "border-slate-900 bg-slate-900 text-white"
+											: "border-slate-200 text-slate-600 hover:border-slate-300"
+									}`}
+								>
+									₹ INR — Razorpay
+								</button>
+							)}
 						</div>
 					</div>
 				)}
 
-				<div className="flex flex-wrap gap-2">
+				{gateway === "STRIPE" && (
+					<label className="flex items-start gap-2.5 rounded-lg border border-slate-200 px-3 py-2.5 text-sm text-slate-600">
+						<input
+							type="checkbox"
+							checked={autoRenew}
+							onChange={e => setAutoRenew(e.target.checked)}
+							className="mt-0.5 rounded border-slate-300"
+						/>
+						<span>
+							<span className="font-medium text-slate-800">Auto-renew with Stripe</span> — we&apos;ll save your card and
+							charge it automatically each {plan.billingCycle?.toLowerCase()}, so you never have to manually renew.
+							Cancel anytime.
+						</span>
+					</label>
+				)}
+
+				{!autoRenew && (
+					<>
+						<div className="flex flex-wrap gap-2">
 					{PRESETS.map(p => (
 						<button
 							key={p.months}
@@ -194,14 +235,30 @@ export function DurationPickerModal({ plan, onClose, onConfirm, isSubmitting, de
 						</>
 					)}
 				</div>
+					</>
+				)}
+
+				{autoRenew && (
+					<div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+						<p className="text-sm text-slate-500">Billed automatically every</p>
+						<p className="text-2xl font-semibold text-slate-900">{plan.billingCycle?.toLowerCase()}</p>
+						<p className="mt-1 text-xs text-slate-400">
+							{formatMoney(plan.priceUsd ?? 0, "USD")} / {plan.billingCycle?.toLowerCase()}, charged to your card automatically.
+						</p>
+					</div>
+				)}
 
 				<Button
 					className="w-full"
-					disabled={isFetching || !quote || quote.unavailable || months < 1 || months > MAX_MONTHS}
+					disabled={autoRenew ? false : (isFetching || !quote || quote.unavailable || months < 1 || months > MAX_MONTHS)}
 					isLoading={isSubmitting}
-					onClick={() => onConfirm(months, gateway)}
+					onClick={() => onConfirm(autoRenew ? undefined : months, gateway, autoRenew)}
 				>
-					{quote && quote.amount === 0 && quote.listAmount > 0 ? "Activate — fully covered by credit" : "Continue to payment"}
+					{autoRenew
+						? "Continue to payment — auto-renew"
+						: quote && quote.amount === 0 && quote.listAmount > 0
+							? "Activate — fully covered by credit"
+							: "Continue to payment"}
 				</Button>
 			</div>
 		</Modal>

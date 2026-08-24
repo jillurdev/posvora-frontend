@@ -46,6 +46,8 @@ export interface Product {
 	unit?: { id: string; name: string; shortName: string } | null;
 	description?: string | null;
 	costPrice?: number | null;
+	/** Weighted-average cost, maintained automatically on purchase receipt — used for COGS posting. Read-only. */
+	averageCost?: number | null;
 	sellingPrice?: number | null;
 	wholesalePrice?: number | null;
 	dealerPrice?: number | null;

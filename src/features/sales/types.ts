@@ -40,6 +40,9 @@ export interface CreateSalePayload {
 	payments?: SalePaymentPayload[];
 	note?: string;
 	holdSale?: boolean;
+	/** Multi-currency sale — see the POS currency picker. Omit for a sale in the shop's own currency. */
+	currency?: string;
+	exchangeRate?: number;
 }
 
 export interface Sale {
@@ -57,6 +60,8 @@ export interface Sale {
 	totalAmount: number;
 	paidAmount?: number | null;
 	dueAmount?: number | null;
+	/** ISO currency code the sale was made in — omitted/undefined means the shop's own currency. */
+	currency?: string | null;
 	note?: string | null;
 	createdAt: string;
 	items?: Array<{

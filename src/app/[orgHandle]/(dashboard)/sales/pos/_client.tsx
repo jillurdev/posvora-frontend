@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { Minus, Plus, Search, ShoppingCart, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/Button";
@@ -19,9 +20,9 @@ import { useCreateSale, useResumeSale, useSale } from "@/features/sales/hooks/us
 import { ReceiptModal } from "@/features/sales/components/ReceiptModal";
 import type { Product } from "@/features/product/types";
 import type { SalePaymentMethod, Sale } from "@/features/sales/types";
-import { useFormatMoney } from "@/hooks/useCurrency";
-
-import { useFormatMoney, useCountry } from "@/hooks/useCurrency";
+import { useCountry, useCurrency } from "@/hooks/useCurrency";
+import { formatMoney as formatMoneyIn } from "@/lib/utils";
+import { currencyService } from "@/services/currency.service";
 import { getPaymentMethods } from "@/lib/paymentMethods";
 
 interface CartLine {
@@ -36,7 +37,7 @@ interface CartLine {
 }
 
 export default function PosPage() {
-	const formatMoney = useFormatMoney();
+	const shopCurrency = useCurrency();
 	const country = useCountry();
 	const PAYMENT_METHODS = getPaymentMethods(country, [{ value: "DUE", label: "Due (pay later)" }]) as {
 		value: SalePaymentMethod;
@@ -50,6 +51,30 @@ export default function PosPage() {
 	const [prefilled, setPrefilled] = useState(false);
 
 	const { activeShopId, shops } = useActiveShop();
+
+	// Multi-currency selling (hardening item: wiring ProductPrice overrides
+	// into checkout — this is the missing currency picker that was blocking
+	// it). Defaults to the shop's own currency, in which case nothing about
+	// the sale changes at all — the currency/exchangeRate fields are simply
+	// left out of the payload, exactly as before this feature existed.
+	const { data: currencies = [] } = useQuery({ queryKey: ["currencies"], queryFn: () => currencyService.list() });
+	const [saleCurrency, setSaleCurrency] = useState<string>("");
+	const effectiveCurrency = saleCurrency || shopCurrency;
+	const isForeignCurrency = effectiveCurrency !== shopCurrency;
+
+	// Live rate for the picked currency — only fetched when it differs from
+	// the shop's own currency. Used both to convert a product's default
+	// price when it has no explicit ProductPrice override, and to send
+	// `exchangeRate` on the sale itself (see sales.service.ts, which posts
+	// the accounting journal in the shop's base currency using exactly
+	// this rate).
+	const { data: rateQuote } = useQuery({
+		queryKey: ["currency-quote", shopCurrency, effectiveCurrency],
+		queryFn: () => currencyService.quote(shopCurrency, effectiveCurrency, 1),
+		enabled: isForeignCurrency,
+	});
+	const exchangeRate = isForeignCurrency ? (rateQuote?.rate ?? 1) : 1;
+	const formatCart = (amount: number) => formatMoneyIn(amount, effectiveCurrency);
 
 	const { data: allBranches = [] } = useBranches();
 	const branches = useMemo(() => allBranches.filter(b => b.shopId === activeShopId), [allBranches, activeShopId]);
@@ -93,6 +118,7 @@ export default function PosPage() {
 		if (resumingSale.customerId) setCustomerId(resumingSale.customerId);
 		setOrderDiscount(Number(resumingSale.discountAmount ?? 0));
 		setNote(resumingSale.note ?? "");
+		if (resumingSale.currency && resumingSale.currency !== shopCurrency) setSaleCurrency(resumingSale.currency);
 		const items = resumingSale.items ?? [];
 		setCart(
 			items.map(item => ({
@@ -124,8 +150,19 @@ export default function PosPage() {
 	const addToCart = (product: Product) => {
 		const variant = product.variants?.[0];
 		const key = variant?.id ?? product.id;
-		const unitPrice = variant?.sellingPrice ?? product.sellingPrice ?? 0;
 		const sku = variant?.sku ?? product.sku;
+
+		// Currency-aware pricing: an explicit ProductPrice override for the
+		// selected currency wins (see ProductService.getEffectivePrice on the
+		// backend — this mirrors that same fallback order client-side so the
+		// price shown while shopping matches what actually gets charged).
+		// Variant pricing has no per-currency override table yet, so a
+		// variant's own sellingPrice is only used as-is for the shop's own
+		// currency; for a foreign currency it converts from the base
+		// product's price like everything else without an override.
+		const override = !variant ? product.prices?.find(p => p.currencyCode === effectiveCurrency && p.isActive) : undefined;
+		const basePrice = variant?.sellingPrice ?? product.sellingPrice ?? 0;
+		const unitPrice = override ? override.sellingPrice : basePrice * exchangeRate;
 
 		setCart(prev => {
 			const existing = prev.find(l => l.key === key);
@@ -187,6 +224,7 @@ export default function PosPage() {
 		setNote("");
 		setCustomerId("");
 		setPayments([{ method: "CASH", amount: 0 }]);
+		setSaleCurrency("");
 	};
 
 	const submit = (holdSale: boolean) => {
@@ -215,6 +253,11 @@ export default function PosPage() {
 			payments: holdSale ? undefined : payments.filter(p => p.amount > 0),
 			note: note || undefined,
 			holdSale,
+			// Only sent for a non-shop-currency sale — omitting these for the
+			// (overwhelmingly common) same-currency case keeps behavior
+			// byte-for-byte identical to before this feature existed.
+			currency: isForeignCurrency ? effectiveCurrency : undefined,
+			exchangeRate: isForeignCurrency ? exchangeRate : undefined,
 		};
 
 		const onSuccess = (sale: Sale) => {
@@ -268,7 +311,7 @@ export default function PosPage() {
 				}
 			/>
 
-			<div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+			<div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
 				<Select value={effectiveBranchId} onChange={e => setBranchId(e.target.value)}>
 					{branches.map(b => (
 						<option key={b.id} value={b.id}>
@@ -284,7 +327,25 @@ export default function PosPage() {
 						</option>
 					))}
 				</Select>
+				<Select
+					value={effectiveCurrency}
+					disabled={cart.length > 0}
+					title={cart.length > 0 ? "Clear the cart to change currency — prices are locked in once items are added." : "Currency to sell in"}
+					onChange={e => setSaleCurrency(e.target.value === shopCurrency ? "" : e.target.value)}
+				>
+					{(currencies.length ? currencies : [{ code: shopCurrency, name: shopCurrency }]).map(c => (
+						<option key={c.code} value={c.code}>
+							{c.code}{c.code === shopCurrency ? " (shop currency)" : ""}
+						</option>
+					))}
+				</Select>
 			</div>
+			{isForeignCurrency && (
+				<p className="-mt-2 mb-4 text-xs text-slate-400">
+					Selling in {effectiveCurrency} — converted at 1 {shopCurrency} = {exchangeRate.toFixed(4)} {effectiveCurrency}
+					{rateQuote ? "" : " (fetching live rate…)"}.
+				</p>
+			)}
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 				{/* Product search + cart */}
@@ -315,7 +376,13 @@ export default function PosPage() {
 											<span className="font-medium text-slate-900">{product.name}</span>{" "}
 											<span className="text-slate-400">({product.sku})</span>
 										</span>
-										<span className="text-slate-600">{formatMoney(product.sellingPrice ?? 0)}</span>
+										<span className="text-slate-600">
+											{formatMoneyIn(
+												(!product.variants?.length && product.prices?.find(pr => pr.currencyCode === effectiveCurrency && pr.isActive)?.sellingPrice)
+													|| (product.sellingPrice ?? 0) * exchangeRate,
+												effectiveCurrency,
+											)}
+										</span>
 									</button>
 								))}
 							</div>
@@ -340,7 +407,7 @@ export default function PosPage() {
 											<p className="font-medium text-slate-900">{line.name}</p>
 											<p className="text-xs text-slate-400">{line.sku}</p>
 										</td>
-										<td className="px-4 py-3 text-slate-700">{formatMoney(line.unitPrice)}</td>
+										<td className="px-4 py-3 text-slate-700">{formatCart(line.unitPrice)}</td>
 										<td className="px-4 py-3">
 											<div className="flex items-center gap-1">
 												<button
@@ -359,7 +426,7 @@ export default function PosPage() {
 											</div>
 										</td>
 										<td className="px-4 py-3 font-medium text-slate-900">
-											{formatMoney(line.unitPrice * line.quantity - line.discountAmount)}
+											{formatCart(line.unitPrice * line.quantity - line.discountAmount)}
 										</td>
 										<td className="px-4 py-3">
 											<button onClick={() => removeLine(line.key)} className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
@@ -419,7 +486,7 @@ export default function PosPage() {
 					<div className="space-y-2 rounded-xl border border-slate-200 bg-white p-4 text-sm">
 						<div className="flex items-center justify-between">
 							<span className="text-slate-500">Subtotal</span>
-							<span className="font-medium text-slate-900">{formatMoney(subtotal)}</span>
+							<span className="font-medium text-slate-900">{formatCart(subtotal)}</span>
 						</div>
 						<div className="flex items-center justify-between gap-2">
 							<span className="text-slate-500">Discount</span>
@@ -443,7 +510,7 @@ export default function PosPage() {
 						</div>
 						<div className="flex items-center justify-between border-t border-slate-100 pt-2 text-base">
 							<span className="font-semibold text-slate-900">Total</span>
-							<span className="font-semibold text-slate-900">{formatMoney(total)}</span>
+							<span className="font-semibold text-slate-900">{formatCart(total)}</span>
 						</div>
 					</div>
 
@@ -484,7 +551,7 @@ export default function PosPage() {
 						<div className="flex items-center justify-between border-t border-slate-100 pt-2 text-sm">
 							<span className="text-slate-500">Due</span>
 							<span className={due > 0 ? "font-semibold text-amber-600" : "font-semibold text-emerald-600"}>
-								{formatMoney(due)}
+								{formatCart(due)}
 							</span>
 						</div>
 					</div>

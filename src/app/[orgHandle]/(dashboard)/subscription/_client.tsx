@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
-import { usePlans, useMySubscription, useCheckout } from "@/features/subscription/hooks/useSubscription";
+import { usePlans, useMySubscription, useCheckout, useCancelSubscription } from "@/features/subscription/hooks/useSubscription";
 import { DurationPickerModal } from "@/features/subscription/components/DurationPickerModal";
 import { ConfirmPlanActionModal } from "@/features/subscription/components/ConfirmPlanActionModal";
 import { getRenewalWarning, isSubscriptionCurrentlyActive, isTrialEligible, planLimitLines } from "@/features/subscription/utils";
@@ -25,7 +25,9 @@ export default function SubscriptionPage() {
 	const hasUsedTrial = me?.hasUsedTrial ?? false;
 	const orgCountry = me?.country ?? "BD";
 	const isIntl = orgCountry !== "BD";
+	const isIndia = orgCountry === "IN";
 	const checkout = useCheckout();
+	const cancelSubscription = useCancelSubscription();
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [pickingPlan, setPickingPlan] = useState<Plan | null>(null);
@@ -143,6 +145,28 @@ export default function SubscriptionPage() {
 					<Check className="h-4 w-4 shrink-0" />
 					You have <strong>{formatMoney(subscription!.creditBalance!)}</strong> in credit banked from a previous plan change — it'll be
 					applied automatically to your next upgrade.
+				</div>
+			)}
+
+			{subscription?.autoRenew && subscription?.gatewaySubscriptionId && (
+				<div className="mb-4 flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+					<div className="flex items-center gap-2">
+						<CreditCard className="h-4 w-4 shrink-0 text-slate-500" />
+						Auto-renewing via Stripe — your card will be charged automatically
+						{subscription.nextBillingAt ? ` on ${formatDate(subscription.nextBillingAt)}` : " each billing cycle"}.
+					</div>
+					<Button
+						variant="outline"
+						size="sm"
+						isLoading={cancelSubscription.isPending}
+						onClick={() => {
+							if (window.confirm("Stop auto-renewing? Your subscription stays active until the current period ends, then moves to the Free plan.")) {
+								cancelSubscription.mutate();
+							}
+						}}
+					>
+						Cancel auto-renew
+					</Button>
 				</div>
 			)}
 
@@ -295,10 +319,11 @@ export default function SubscriptionPage() {
 				plan={pickingPlan}
 				onClose={() => setPickingPlan(null)}
 				isSubmitting={checkout.isPending}
-				defaultGateway={(orgCountry === "BD" ? "SSLCOMMERZ" : "STRIPE") as PaymentGateway}
-				onConfirm={(durationMonths, gateway) => {
+				defaultGateway={(orgCountry === "BD" ? "SSLCOMMERZ" : isIndia ? "RAZORPAY" : "STRIPE") as PaymentGateway}
+				razorpayAvailable={isIndia}
+				onConfirm={(durationMonths, gateway, autoRenew) => {
 					if (!pickingPlan) return;
-					checkout.mutate({ planId: pickingPlan.id, durationMonths, gateway });
+					checkout.mutate({ planId: pickingPlan.id, durationMonths, gateway, autoRenew });
 					setPickingPlan(null);
 				}}
 			/>

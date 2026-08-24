@@ -38,6 +38,14 @@ export interface Subscription {
 	creditBalance?: number;
 	plan?: Plan;
 	invoices?: Invoice[];
+	// Set once a Stripe recurring subscription is active for this org — see
+	// CurrencyRateSyncService/subscription.service's invoice.paid webhook
+	// handling on the backend. Non-null means Stripe is auto-charging the
+	// saved card every billing cycle; nextBillingAt is when that next
+	// charge will happen.
+	autoRenew?: boolean;
+	gatewaySubscriptionId?: string | null;
+	nextBillingAt?: string | null;
 }
 
 export interface MySubscription {

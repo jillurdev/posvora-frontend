@@ -30,8 +30,8 @@ export function useMySubscription() {
 export function useCheckout() {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: ({ planId, durationMonths, gateway }: { planId: string; durationMonths?: number; gateway?: PaymentGateway }) =>
-			subscriptionApi.checkout(planId, durationMonths, gateway),
+		mutationFn: ({ planId, durationMonths, gateway, autoRenew }: { planId: string; durationMonths?: number; gateway?: PaymentGateway; autoRenew?: boolean }) =>
+			subscriptionApi.checkout(planId, durationMonths, gateway, autoRenew),
 		onSuccess: (result: CheckoutResult) => {
 			if (result.requiresPayment && result.gatewayUrl) {
 				window.location.href = result.gatewayUrl;

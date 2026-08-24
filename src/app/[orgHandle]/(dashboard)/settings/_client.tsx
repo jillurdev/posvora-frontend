@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
-import { TextField } from "@/components/ui/Field";
+import { SelectField, TextField } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { FileUploadPreview } from "@/components/common/FileUploadPreview";
@@ -17,6 +17,7 @@ import { useChangePassword } from "@/features/auth/hooks/useChangePassword";
 import { changePasswordSchema, ChangePasswordFormValues } from "@/features/auth/schema";
 import { TwoFactorSection } from "@/features/auth/components/TwoFactorSection";
 import { KycVerificationSection } from "@/features/kyc/components/KycVerificationSection";
+import { TaxRulesSection } from "@/features/tax/components/TaxRulesSection";
 import type { UpdateOrganizationPayload } from "@/features/organization/types";
 
 export default function SettingsPage() {
@@ -31,6 +32,11 @@ export default function SettingsPage() {
 	const { data: shops = [] } = useShops();
 	const uploadShopLogo = useUploadShopLogo();
 	const changePassword = useChangePassword();
+	const [taxShopId, setTaxShopId] = useState<string>("");
+
+	useEffect(() => {
+		if (!taxShopId && shops.length) setTaxShopId(shops[0].id);
+	}, [shops, taxShopId]);
 
 	const profileForm = useForm({ defaultValues: { name: user?.name ?? "", phone: user?.phone ?? "" } });
 	const orgForm = useForm<UpdateOrganizationPayload>({ defaultValues: { name: "", handle: "", email: "", phone: "", address: "" } });
@@ -56,6 +62,7 @@ export default function SettingsPage() {
 					<TabsTrigger value="general">General</TabsTrigger>
 					<TabsTrigger value="branding">Branding</TabsTrigger>
 					<TabsTrigger value="verification">Verification</TabsTrigger>
+					<TabsTrigger value="taxes">Taxes</TabsTrigger>
 					<TabsTrigger value="security">Security</TabsTrigger>
 				</TabsList>
 
@@ -176,6 +183,27 @@ export default function SettingsPage() {
 				{/* ── Verification: KYC ────────────────────────────────── */}
 				<TabsContent value="verification">
 					<KycVerificationSection />
+				</TabsContent>
+
+				{/* ── Taxes: tax-jurisdiction/rate/rule engine ─────────── */}
+				<TabsContent value="taxes">
+					<section className="rounded-xl border border-slate-200 bg-white p-6">
+						<h2 className="mb-1 text-sm font-semibold text-slate-700">Tax rules</h2>
+						<p className="mb-4 text-sm text-slate-500">
+							Tax rules are per-shop. Pick a shop to manage the VAT/tax rates that auto-apply
+							to its sales.
+						</p>
+						{shops.length > 1 && (
+							<div className="mb-4 max-w-xs">
+								<SelectField id="tax-shop" label="Shop" value={taxShopId} onChange={e => setTaxShopId(e.target.value)}>
+									{shops.map(shop => (
+										<option key={shop.id} value={shop.id}>{shop.name}</option>
+									))}
+								</SelectField>
+							</div>
+						)}
+						<TaxRulesSection shopId={taxShopId || shops[0]?.id} />
+					</section>
 				</TabsContent>
 
 				{/* ── Security: password + 2FA ─────────────────────────── */}
