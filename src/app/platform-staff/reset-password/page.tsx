@@ -37,7 +37,7 @@ function AdminResetPasswordInner() {
 							This reset link is missing its token. Please request a new one.
 						</p>
 						<Link
-							href="/super-admin/forgot-password"
+							href="/platform-staff/forgot-password"
 							className="mt-6 inline-block text-sm font-medium text-slate-200 hover:underline">
 							Request a new link
 						</Link>
@@ -49,7 +49,7 @@ function AdminResetPasswordInner() {
 						</div>
 						<h1 className="mt-4 text-lg font-semibold text-white">Password reset</h1>
 						<p className="mt-2 text-sm text-slate-400">Your admin password has been changed. Please sign in again.</p>
-						<Button className="mt-6 w-full" onClick={() => router.replace("/super-admin/login")}>
+						<Button className="mt-6 w-full" onClick={() => router.replace("/platform-staff/login")}>
 							Sign in
 						</Button>
 					</div>

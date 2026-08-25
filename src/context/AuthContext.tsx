@@ -17,7 +17,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 // Dashboard routes are now org-scoped: /<orgHandle>/dashboard, /<orgHandle>/products, etc.
 // Rather than hardcoding every dashboard section (which would need updating every time a
 // new one is added), treat any first path segment that ISN'T a known public route as an
-// org handle — and therefore protected. Marketing pages, auth pages, and the super-admin
+// org handle — and therefore protected. Marketing pages, auth pages, and the platform-staff
 // area must never be force-redirected just because a background "am I logged in?" check
 // came back unauthenticated.
 const PUBLIC_TOP_SEGMENTS = new Set([
@@ -33,7 +33,7 @@ const PUBLIC_TOP_SEGMENTS = new Set([
 	"terms",
 	"shop",
 	"support",
-	"super-admin",
+	"platform-staff",
 ]);
 
 function isProtectedPath(pathname: string): boolean {

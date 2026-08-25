@@ -4,8 +4,8 @@ import Link from "next/link";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge } from "@/components/ui/Badge";
-import { useAdminDashboard, useAdminOrganizations } from "@/features/super-admin/hooks/useSuperAdmin";
-import type { AdminOrganization } from "@/features/super-admin/types";
+import { useAdminDashboard, useAdminOrganizations } from "@/features/platform-staff/hooks/useSuperAdmin";
+import type { AdminOrganization } from "@/features/platform-staff/types";
 import { formatDate } from "@/lib/utils";
 
 function StatCard({ label, value, href }: { label: string; value: string | number; href?: string }) {
@@ -34,34 +34,34 @@ export default function SuperAdminPage() {
 			<PageHeader title="Platform Admin" description="Cross-organization visibility for Posvora staff." />
 
 			<div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-				<StatCard label="Organizations" value={dashboard?.totalOrganizations ?? "—"} href="/super-admin/organizations" />
+				<StatCard label="Organizations" value={dashboard?.totalOrganizations ?? "—"} href="/platform-staff/organizations" />
 				<StatCard label="Shops" value={dashboard?.shops ?? "—"} />
-				<StatCard label="Active subscriptions" value={dashboard?.activeSubscriptions ?? "—"} href="/super-admin/plans" />
-				<StatCard label="Open support tickets" value={dashboard?.openSupportTickets ?? "—"} href="/super-admin/support" />
+				<StatCard label="Active subscriptions" value={dashboard?.activeSubscriptions ?? "—"} href="/platform-staff/plans" />
+				<StatCard label="Open support tickets" value={dashboard?.openSupportTickets ?? "—"} href="/platform-staff/support" />
 			</div>
 
 			<div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
 				<StatCard
 					label="MRR"
 					value={dashboard ? `৳${dashboard.billing.mrr.toLocaleString()}` : "—"}
-					href="/super-admin/billing"
+					href="/platform-staff/billing"
 				/>
 				<StatCard
 					label="Collected this month"
 					value={dashboard ? `৳${dashboard.billing.collectedThisMonth.toLocaleString()}` : "—"}
-					href="/super-admin/billing"
+					href="/platform-staff/billing"
 				/>
 				<StatCard
 					label="Outstanding unpaid"
 					value={dashboard ? `৳${dashboard.billing.outstandingUnpaid.toLocaleString()}` : "—"}
-					href="/super-admin/billing"
+					href="/platform-staff/billing"
 				/>
-				<StatCard label="Pending KYC" value={dashboard?.pendingKyc ?? "—"} href="/super-admin/kyc" />
+				<StatCard label="Pending KYC" value={dashboard?.pendingKyc ?? "—"} href="/platform-staff/kyc" />
 			</div>
 
 			<div className="mb-3 flex items-center justify-between">
 				<h2 className="text-sm font-semibold text-slate-900">Recent organizations</h2>
-				<Link href="/super-admin/organizations" className="text-sm font-medium text-slate-600 hover:underline">
+				<Link href="/platform-staff/organizations" className="text-sm font-medium text-slate-600 hover:underline">
 					View all
 				</Link>
 			</div>

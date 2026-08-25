@@ -8,8 +8,8 @@ import { Pagination } from "@/components/common/Pagination";
 import { SearchInput } from "@/components/common/SearchInput";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { useAdminOrganizations, useAdminToggleOrganization } from "@/features/super-admin/hooks/useSuperAdmin";
-import type { AdminOrganization } from "@/features/super-admin/types";
+import { useAdminOrganizations, useAdminToggleOrganization } from "@/features/platform-staff/hooks/useSuperAdmin";
+import type { AdminOrganization } from "@/features/platform-staff/types";
 import { formatDate } from "@/lib/utils";
 
 export default function OrganizationsPage() {
@@ -22,7 +22,7 @@ export default function OrganizationsPage() {
 		{
 			header: "Organization",
 			accessor: o => (
-				<Link href={`/super-admin/organizations/${o.id}`} className="font-medium text-slate-900 hover:underline">
+				<Link href={`/platform-staff/organizations/${o.id}`} className="font-medium text-slate-900 hover:underline">
 					{o.name}
 				</Link>
 			),

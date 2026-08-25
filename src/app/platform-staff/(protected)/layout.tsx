@@ -12,14 +12,14 @@ import type { SuperAdminRole } from "@/features/admin-auth/types";
 import { cn } from "@/lib/utils";
 
 const NAV: { label: string; href: string; icon: typeof LayoutDashboard; exact?: boolean; roles?: SuperAdminRole[] }[] = [
-	{ label: "Dashboard", href: "/super-admin", icon: LayoutDashboard, exact: true },
-	{ label: "Organizations", href: "/super-admin/organizations", icon: Building2, roles: ["OWNER", "ADMIN"] },
-	{ label: "Plans", href: "/super-admin/plans", icon: CreditCard, roles: ["OWNER", "ADMIN"] },
-	{ label: "KYC Verification", href: "/super-admin/kyc", icon: BadgeCheck, roles: ["OWNER", "ADMIN"] },
-	{ label: "Billing", href: "/super-admin/billing", icon: Wallet, roles: ["OWNER", "ADMIN"] },
-	{ label: "Messages", href: "/super-admin/messages", icon: MessageSquare, roles: ["OWNER", "ADMIN"] },
-	{ label: "Platform Staff", href: "/super-admin/staff", icon: Users, roles: ["OWNER"] },
-	{ label: "Support Tickets", href: "/super-admin/support", icon: LifeBuoy },
+	{ label: "Dashboard", href: "/platform-staff", icon: LayoutDashboard, exact: true },
+	{ label: "Organizations", href: "/platform-staff/organizations", icon: Building2, roles: ["OWNER", "ADMIN"] },
+	{ label: "Plans", href: "/platform-staff/plans", icon: CreditCard, roles: ["OWNER", "ADMIN"] },
+	{ label: "KYC Verification", href: "/platform-staff/kyc", icon: BadgeCheck, roles: ["OWNER", "ADMIN"] },
+	{ label: "Billing", href: "/platform-staff/billing", icon: Wallet, roles: ["OWNER", "ADMIN"] },
+	{ label: "Messages", href: "/platform-staff/messages", icon: MessageSquare, roles: ["OWNER", "ADMIN"] },
+	{ label: "Platform Staff", href: "/platform-staff/staff", icon: Users, roles: ["OWNER"] },
+	{ label: "Support Tickets", href: "/platform-staff/support", icon: LifeBuoy },
 ];
 
 export default function SuperAdminProtectedLayout({ children }: { children: React.ReactNode }) {
@@ -29,7 +29,7 @@ export default function SuperAdminProtectedLayout({ children }: { children: Reac
 	const logout = useAdminLogout();
 
 	useEffect(() => {
-		if (!isLoading && !admin) router.replace("/super-admin/login");
+		if (!isLoading && !admin) router.replace("/platform-staff/login");
 	}, [isLoading, admin, router]);
 
 	if (isLoading || !admin) {

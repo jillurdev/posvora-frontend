@@ -10,8 +10,8 @@ import {
 	useAdminBillingSummary,
 	useAdminInvoices,
 	useMarkInvoicePaid,
-} from "@/features/super-admin/hooks/useSuperAdmin";
-import type { AdminInvoice } from "@/features/super-admin/types";
+} from "@/features/platform-staff/hooks/useSuperAdmin";
+import type { AdminInvoice } from "@/features/platform-staff/types";
 import { formatDate, formatMoney } from "@/lib/utils";
 
 // Platform-wide summary cards (MRR, collected, outstanding) are normalized

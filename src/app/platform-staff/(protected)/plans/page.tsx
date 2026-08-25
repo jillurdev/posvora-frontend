@@ -13,8 +13,8 @@ import {
 	useAdminPlans,
 	useAdminTogglePlan,
 	useAdminUpdatePlan,
-} from "@/features/super-admin/hooks/useSuperAdmin";
-import type { CreatePlanPayload, Plan } from "@/features/super-admin/types";
+} from "@/features/platform-staff/hooks/useSuperAdmin";
+import type { CreatePlanPayload, Plan } from "@/features/platform-staff/types";
 
 function formatPrice(price: string | number) {
 	const n = typeof price === "string" ? Number(price) : price;

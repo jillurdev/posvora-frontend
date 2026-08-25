@@ -58,7 +58,7 @@ export default function AdminForgotPasswordPage() {
 				)}
 
 				<p className="mt-6 text-center text-sm text-slate-400">
-					<Link href="/super-admin/login" className="font-medium text-slate-200 hover:underline">
+					<Link href="/platform-staff/login" className="font-medium text-slate-200 hover:underline">
 						Back to sign in
 					</Link>
 				</p>

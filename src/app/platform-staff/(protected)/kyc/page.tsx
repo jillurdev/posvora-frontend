@@ -9,8 +9,8 @@ import { Select } from "@/components/ui/Input";
 import {
 	useAdminKycDocuments,
 	useAdminReviewKycDocument,
-} from "@/features/super-admin/hooks/useSuperAdmin";
-import type { KycDocument } from "@/features/super-admin/types";
+} from "@/features/platform-staff/hooks/useSuperAdmin";
+import type { KycDocument } from "@/features/platform-staff/types";
 import { formatDateTime } from "@/lib/utils";
 
 const STATUS_TONE: Record<string, "warning" | "success" | "danger"> = {

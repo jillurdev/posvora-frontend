@@ -17,14 +17,14 @@ export default function SuperAdminLoginPage() {
 	const [password, setPassword] = useState("");
 
 	useEffect(() => {
-		if (!isLoading && admin) router.replace("/super-admin");
+		if (!isLoading && admin) router.replace("/platform-staff");
 	}, [isLoading, admin, router]);
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		mutate(
 			{ email, password },
-			{ onSuccess: () => router.replace("/super-admin") },
+			{ onSuccess: () => router.replace("/platform-staff") },
 		);
 	};
 
@@ -71,7 +71,7 @@ export default function SuperAdminLoginPage() {
 					/>
 					<div className="flex justify-end">
 						<Link
-							href="/super-admin/forgot-password"
+							href="/platform-staff/forgot-password"
 							className="text-sm font-medium text-slate-400 hover:text-slate-200 hover:underline">
 							Forgot password?
 						</Link>

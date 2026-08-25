@@ -4,7 +4,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge } from "@/components/ui/Badge";
-import { useAdminSupportTickets } from "@/features/super-admin/hooks/useSuperAdmin";
+import { useAdminSupportTickets } from "@/features/platform-staff/hooks/useSuperAdmin";
 import { STATUS_LABEL, STATUS_TONE, PRIORITY_TONE } from "@/features/support/utils";
 import type { SupportTicket } from "@/features/support/types";
 import { formatDateTime } from "@/lib/utils";
@@ -16,7 +16,7 @@ export default function AdminSupportTicketsPage() {
 		{
 			header: "Subject",
 			accessor: t => (
-				<Link href={`/super-admin/support/${t.id}`} className="font-medium text-slate-900 hover:underline">
+				<Link href={`/platform-staff/support/${t.id}`} className="font-medium text-slate-900 hover:underline">
 					{t.subject}
 				</Link>
 			),

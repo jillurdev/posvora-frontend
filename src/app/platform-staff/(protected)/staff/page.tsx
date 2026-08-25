@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/Button";
 import { TextField, SelectField } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { useAdminAuth } from "@/context/AdminAuthContext";
-import { useAdminCreateStaff, useAdminStaff, useAdminToggleStaff } from "@/features/super-admin/hooks/useSuperAdmin";
-import type { CreatePlatformAdminPayload, PlatformAdmin } from "@/features/super-admin/types";
+import { useAdminCreateStaff, useAdminStaff, useAdminToggleStaff } from "@/features/platform-staff/hooks/useSuperAdmin";
+import type { CreatePlatformAdminPayload, PlatformAdmin } from "@/features/platform-staff/types";
 import { formatDateTime } from "@/lib/utils";
 
 const emptyForm: CreatePlatformAdminPayload = { name: "", email: "", phone: "", password: "", role: "SUPPORT" };

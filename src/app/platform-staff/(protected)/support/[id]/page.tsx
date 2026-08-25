@@ -11,7 +11,7 @@ import {
 	useAdminSupportTicket,
 	useAdminReplySupportTicket,
 	useAdminUpdateTicketStatus,
-} from "@/features/super-admin/hooks/useSuperAdmin";
+} from "@/features/platform-staff/hooks/useSuperAdmin";
 import { STATUS_LABEL, STATUS_TONE, PRIORITY_TONE } from "@/features/support/utils";
 import type { SupportTicketStatus } from "@/features/support/types";
 import { formatDateTime, cn } from "@/lib/utils";
@@ -36,7 +36,7 @@ export default function AdminSupportTicketDetailPage() {
 	return (
 		<div className="mx-auto max-w-3xl">
 			<button
-				onClick={() => router.push("/super-admin/support")}
+				onClick={() => router.push("/platform-staff/support")}
 				className="mb-4 flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
 			>
 				<ArrowLeft className="h-4 w-4" /> Back to tickets

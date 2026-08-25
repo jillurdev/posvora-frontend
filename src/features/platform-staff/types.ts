@@ -33,11 +33,20 @@ export interface AdminSubscriptionSummary {
 	plan: AdminPlanSummary;
 }
 
+export interface AdminBranchSummary {
+	id: string;
+	name: string;
+	code: string | null;
+	isMain: boolean;
+	isActive: boolean;
+}
+
 export interface AdminShopSummary {
 	id: string;
 	name: string;
 	slug: string;
 	isActive: boolean;
+	branches?: AdminBranchSummary[];
 }
 
 export interface AdminOrganization {

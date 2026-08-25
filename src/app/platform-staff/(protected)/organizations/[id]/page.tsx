@@ -14,7 +14,7 @@ import {
 	useAdminOrganization,
 	useAdminPlans,
 	useAdminToggleOrganization,
-} from "@/features/super-admin/hooks/useSuperAdmin";
+} from "@/features/platform-staff/hooks/useSuperAdmin";
 import { formatDate } from "@/lib/utils";
 
 function formatPrice(price: string | number) {
@@ -59,7 +59,7 @@ export default function OrganizationDetailPage() {
 	return (
 		<div>
 			<button
-				onClick={() => router.push("/super-admin/organizations")}
+				onClick={() => router.push("/platform-staff/organizations")}
 				className="mb-4 flex items-center gap-1 text-sm text-slate-500 hover:text-slate-900">
 				<ArrowLeft className="h-4 w-4" /> Back to organizations
 			</button>
@@ -129,9 +129,27 @@ export default function OrganizationDetailPage() {
 					{org.shops && org.shops.length > 0 ? (
 						<ul className="divide-y divide-slate-100 rounded-lg border border-slate-100">
 							{org.shops.map(shop => (
-								<li key={shop.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
-									<span className="font-medium text-slate-900">{shop.name}</span>
-									{shop.isActive ? <Badge tone="success">Active</Badge> : <Badge tone="danger">Inactive</Badge>}
+								<li key={shop.id} className="px-4 py-2.5 text-sm">
+									<div className="flex items-center justify-between">
+										<span className="font-medium text-slate-900">{shop.name}</span>
+										{shop.isActive ? <Badge tone="success">Active</Badge> : <Badge tone="danger">Inactive</Badge>}
+									</div>
+									{shop.branches && shop.branches.length > 0 ? (
+										<ul className="mt-2 space-y-1 border-l border-slate-100 pl-3">
+											{shop.branches.map(branch => (
+												<li key={branch.id} className="flex items-center justify-between text-xs text-slate-600">
+													<span>
+														{branch.name}
+														{branch.code ? ` (${branch.code})` : ""}
+														{branch.isMain ? " · Main" : ""}
+													</span>
+													{branch.isActive ? <Badge tone="success">Active</Badge> : <Badge tone="danger">Inactive</Badge>}
+												</li>
+											))}
+										</ul>
+									) : (
+										<p className="mt-1 pl-3 text-xs text-slate-400">No branches yet.</p>
+									)}
 								</li>
 							))}
 						</ul>

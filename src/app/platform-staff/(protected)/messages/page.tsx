@@ -11,8 +11,8 @@ import {
 	useAdminOrganizations,
 	useCreateAnnouncement,
 	useToggleAnnouncement,
-} from "@/features/super-admin/hooks/useSuperAdmin";
-import type { Announcement } from "@/features/super-admin/types";
+} from "@/features/platform-staff/hooks/useSuperAdmin";
+import type { Announcement } from "@/features/platform-staff/types";
 import { formatDateTime } from "@/lib/utils";
 
 export default function AdminMessagesPage() {
