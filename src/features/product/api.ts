@@ -13,13 +13,19 @@ import type {
 
 export const productApi = {
 	// Categories
-	listCategories: (shopId: string) => httpClient.get<Category[]>("/categories", { shopId }),
-	createCategory: (payload: { shopId: string; name: string; parentId?: string }) =>
-		httpClient.post<Category>("/categories", payload),
+	listCategories: (shopId: string) =>
+		httpClient.get<Category[]>("/categories", { shopId }),
+	createCategory: (payload: {
+		shopId: string;
+		name: string;
+		parentId?: string;
+	}) => httpClient.post<Category>("/categories", payload),
 
 	// Brands
-	listBrands: (shopId: string) => httpClient.get<Brand[]>("/brands", { shopId }),
-	createBrand: (payload: { shopId: string; name: string }) => httpClient.post<Brand>("/brands", payload),
+	listBrands: (shopId: string) =>
+		httpClient.get<Brand[]>("/brands", { shopId }),
+	createBrand: (payload: { shopId: string; name: string }) =>
+		httpClient.post<Brand>("/brands", payload),
 
 	// Units
 	listUnits: (shopId: string) => httpClient.get<Unit[]>("/units", { shopId }),
@@ -28,17 +34,55 @@ export const productApi = {
 
 	// Products
 	list: (query: ListProductsQuery) =>
-		httpClient.getPaginated<Product[]>("/products", query as unknown as Record<string, string | number>),
+		httpClient.getPaginated<Product[]>(
+			"/products",
+			query as unknown as Record<string, string | number>,
+		),
 	get: (id: string) => httpClient.get<Product>(`/products/${id}`),
-	create: (payload: CreateProductPayload) => httpClient.post<Product>("/products", payload),
+	create: (payload: CreateProductPayload) =>
+		httpClient.post<Product>("/products", payload),
 	update: (id: string, payload: Partial<CreateProductPayload>) =>
 		httpClient.patch<Product>(`/products/${id}`, payload),
 	remove: (id: string) => httpClient.delete(`/products/${id}`),
 
 	// Multi-currency pricing
-	listPrices: (productId: string) => httpClient.get<ProductPrice[]>(`/products/${productId}/prices`),
-	upsertPrice: (productId: string, payload: UpsertProductPricePayload) =>
-		httpClient.post<ProductPrice>(`/products/${productId}/prices`, payload),
+
+	listPrices: async (productId: string): Promise<ProductPrice[]> => {
+		const prices = await httpClient.get<ProductPrice[]>(
+			`/products/${productId}/prices`,
+		);
+
+		return prices.map(price => ({
+			...price,
+			sellingPrice: Number(price.sellingPrice),
+			wholesalePrice:
+				price.wholesalePrice != null ? Number(price.wholesalePrice) : null,
+			dealerPrice: price.dealerPrice != null ? Number(price.dealerPrice) : null,
+			corporatePrice:
+				price.corporatePrice != null ? Number(price.corporatePrice) : null,
+		}));
+	},
+
+	upsertPrice: async (
+		productId: string,
+		payload: UpsertProductPricePayload,
+	): Promise<ProductPrice> => {
+		const price = await httpClient.post<ProductPrice>(
+			`/products/${productId}/prices`,
+			payload,
+		);
+
+		return {
+			...price,
+			sellingPrice: Number(price.sellingPrice),
+			wholesalePrice:
+				price.wholesalePrice != null ? Number(price.wholesalePrice) : null,
+			dealerPrice: price.dealerPrice != null ? Number(price.dealerPrice) : null,
+			corporatePrice:
+				price.corporatePrice != null ? Number(price.corporatePrice) : null,
+		};
+	},
+
 	removePrice: (productId: string, currencyCode: string) =>
 		httpClient.delete(`/products/${productId}/prices/${currencyCode}`),
 };

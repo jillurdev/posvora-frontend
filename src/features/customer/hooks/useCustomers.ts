@@ -44,3 +44,58 @@ export function useDeleteCustomer() {
 		onError: (err: Error) => toast.error(err.message),
 	});
 }
+
+export function useCustomer(id: string) {
+	return useQuery({ queryKey: ["customer", id], queryFn: () => customerApi.get(id), enabled: !!id });
+}
+
+export function useCustomerStatement(id: string, currency?: string) {
+	return useQuery({
+		queryKey: ["customer-statement", id, currency],
+		queryFn: () => customerApi.statement(id, currency),
+		enabled: !!id,
+	});
+}
+
+export function useUpdateCustomer() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, payload }: { id: string; payload: Partial<CustomerPayload> }) => customerApi.update(id, payload),
+		onSuccess: (_data, vars) => {
+			toast.success("Customer updated");
+			qc.invalidateQueries({ queryKey: ["customers"] });
+			qc.invalidateQueries({ queryKey: ["customer", vars.id] });
+		},
+		onError: (err: Error) => toast.error(err.message),
+	});
+}
+
+export function useAddCustomerNote() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, note }: { id: string; note: string }) => customerApi.addNote(id, note),
+		onSuccess: (_data, vars) => {
+			toast.success("Note added");
+			qc.invalidateQueries({ queryKey: ["customer", vars.id] });
+		},
+		onError: (err: Error) => toast.error(err.message),
+	});
+}
+
+export function useAddCustomerFollowUp() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, payload }: { id: string; payload: { dueDate: string; note?: string } }) =>
+			customerApi.addFollowUp(id, payload),
+		onSuccess: (_data, vars) => {
+			toast.success("Follow-up scheduled");
+			qc.invalidateQueries({ queryKey: ["customer", vars.id] });
+			qc.invalidateQueries({ queryKey: ["due-follow-ups"] });
+		},
+		onError: (err: Error) => toast.error(err.message),
+	});
+}
+
+export function useDueFollowUps() {
+	return useQuery({ queryKey: ["due-follow-ups"], queryFn: customerApi.dueFollowUps });
+}

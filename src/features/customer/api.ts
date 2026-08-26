@@ -1,6 +1,6 @@
 import { httpClient } from "@/services/httpClient";
 import type { PaginatedResult } from "@/types/api-response";
-import type { Customer, CustomerGroup, CustomerPayload } from "./types";
+import type { Customer, CustomerGroup, CustomerNote, CustomerPayload, CustomerStatement, FollowUp } from "./types";
 
 export const customerApi = {
 	list: (shopId: string, params?: { search?: string; page?: number; limit?: number }) =>
@@ -12,8 +12,10 @@ export const customerApi = {
 	listGroups: (shopId: string) => httpClient.get<CustomerGroup[]>("/customers/groups", { shopId }),
 	createGroup: (payload: { shopId: string; name: string; type: string; discountPercent?: number }) =>
 		httpClient.post<CustomerGroup>("/customers/groups", payload),
-	addNote: (id: string, note: string) => httpClient.post(`/customers/${id}/notes`, { note }),
-	addFollowUp: (id: string, payload: { dueAt: string; note?: string }) =>
-		httpClient.post(`/customers/${id}/follow-ups`, payload),
-	dueFollowUps: () => httpClient.get("/customers/follow-ups/due"),
+	addNote: (id: string, note: string) => httpClient.post<CustomerNote>(`/customers/${id}/notes`, { note }),
+	addFollowUp: (id: string, payload: { dueDate: string; note?: string }) =>
+		httpClient.post<FollowUp>(`/customers/${id}/follow-ups`, payload),
+	dueFollowUps: () => httpClient.get<FollowUp[]>("/customers/follow-ups/due"),
+	statement: (id: string, currency?: string) =>
+		httpClient.get<CustomerStatement>(`/customers/${id}/statement`, currency ? { currency } : undefined),
 };

@@ -36,3 +36,32 @@ export function useCreateExpense() {
 		onError: (err: Error) => toast.error(err.message),
 	});
 }
+
+export function useTrialBalance(shopId?: string) {
+	return useQuery({
+		queryKey: ["trial-balance", shopId],
+		queryFn: () => accountingApi.trialBalance(shopId!),
+		enabled: !!shopId,
+	});
+}
+
+export function useProfitLoss(branchId?: string, params?: { from: string; to: string }) {
+	return useQuery({
+		queryKey: ["profit-loss", branchId, params],
+		queryFn: () => accountingApi.profitLoss(branchId!, params!),
+		enabled: !!branchId && !!params?.from && !!params?.to,
+	});
+}
+
+export function useCloseDay() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ branchId, payload }: { branchId: string; payload: { date: string; openingCash: number; closingCash: number } }) =>
+			accountingApi.closeDay(branchId, payload),
+		onSuccess: () => {
+			toast.success("Day closed successfully");
+			qc.invalidateQueries({ queryKey: ["expenses"] });
+		},
+		onError: (err: Error) => toast.error(err.message),
+	});
+}

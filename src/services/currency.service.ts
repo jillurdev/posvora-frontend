@@ -1,5 +1,5 @@
 import { httpClient } from "@/services/httpClient";
-import type { Currency, ExchangeRateQuote } from "@/types/currency";
+import type { Currency, ExchangeRateFreshness, ExchangeRateQuote } from "@/types/currency";
 
 export const currencyService = {
   list(): Promise<Currency[]> {
@@ -13,6 +13,15 @@ export const currencyService = {
       from: fromCurrency,
       to: toCurrency,
       amount,
+    });
+  },
+  // Reports how old the latest stored rate for a currency pair is, so
+  // money-moving UI (POS foreign-currency sales, pricing) can warn the
+  // user before they trust a quote that may be badly out of date.
+  freshness(fromCurrency: string, toCurrency: string): Promise<ExchangeRateFreshness> {
+    return httpClient.get<ExchangeRateFreshness>("/currencies/rates/freshness", {
+      from: fromCurrency,
+      to: toCurrency,
     });
   },
 };

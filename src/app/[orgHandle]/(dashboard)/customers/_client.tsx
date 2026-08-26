@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Plus, Trash2, Users } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -17,6 +18,8 @@ import { useCustomers, useCreateCustomer, useDeleteCustomer } from "@/features/c
 import type { Customer, CustomerPayload } from "@/features/customer/types";
 
 export default function CustomersPage() {
+	const router = useRouter();
+	const { orgHandle } = useParams<{ orgHandle: string }>();
 	const { activeShopId, shops } = useActiveShop();
 	const { page, limit, setPage } = usePagination(10);
 	const [search, setSearch] = useState("");
@@ -67,7 +70,10 @@ export default function CustomersPage() {
 		{
 			header: "",
 			accessor: c => (
-				<button onClick={() => deleteCustomer.mutate(c.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
+				<button
+					onClick={e => { e.stopPropagation(); deleteCustomer.mutate(c.id); }}
+					className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
+				>
 					<Trash2 className="h-4 w-4" />
 				</button>
 			),
@@ -90,7 +96,14 @@ export default function CustomersPage() {
 				<SearchInput value={search} onChange={setSearch} placeholder="Search customers..." />
 			</div>
 
-			<DataTable columns={columns} data={data?.data ?? []} isLoading={isLoading} rowKey={c => c.id} emptyTitle="No customers yet" />
+			<DataTable
+				columns={columns}
+				data={data?.data ?? []}
+				isLoading={isLoading}
+				rowKey={c => c.id}
+				emptyTitle="No customers yet"
+				onRowClick={c => router.push(`/${orgHandle}/customers/${c.id}`)}
+			/>
 			{data?.meta && <Pagination page={data.meta.page} totalPages={data.meta.totalPages} onPageChange={setPage} />}
 
 			<Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add customer">

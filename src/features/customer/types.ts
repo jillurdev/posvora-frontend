@@ -21,6 +21,10 @@ export interface Customer {
 	 * of truth. May contain multiple currencies for multi-currency shops.
 	 */
 	balancesByCurrency?: Record<string, number>;
+	// Only present on the single-customer detail endpoint (GET /customers/:id).
+	notes?: CustomerNote[];
+	followUps?: FollowUp[];
+	sales?: { id: string; totalAmount: number; createdAt: string; status?: string }[];
 }
 
 export interface CustomerPayload {
@@ -32,4 +36,42 @@ export interface CustomerPayload {
 	groupId?: string;
 	birthday?: string;
 	referredById?: string;
+}
+
+export interface ReceivableEntry {
+	id: string;
+	customerId: string;
+	currency: string;
+	debit: number;
+	credit: number;
+	balanceAfter: number;
+	sourceType: string;
+	sourceId: string;
+	note?: string | null;
+	createdAt: string;
+}
+
+export interface CustomerStatement {
+	customer: Customer;
+	balances: Record<string, number>;
+	entries: ReceivableEntry[];
+}
+
+export interface CustomerNote {
+	id: string;
+	customerId: string;
+	note: string;
+	createdById?: string | null;
+	createdAt: string;
+}
+
+export interface FollowUp {
+	id: string;
+	customerId: string;
+	dueDate: string;
+	note?: string | null;
+	isDone: boolean;
+	createdById?: string | null;
+	createdAt: string;
+	customer?: Customer;
 }

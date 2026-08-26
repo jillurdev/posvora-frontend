@@ -27,6 +27,7 @@ interface ProductPricesModalProps {
 export function ProductPricesModal({ product, open, onClose }: ProductPricesModalProps) {
 	const { data: currencies } = useQuery({ queryKey: ["currencies"], queryFn: () => currencyService.list() });
 	const { data: prices, isLoading } = useProductPrices(product?.id);
+	console.log("🚀 ~ ProductPricesModal ~ prices:", prices)
 	const upsertPrice = useUpsertProductPrice();
 	const removePrice = useRemoveProductPrice();
 

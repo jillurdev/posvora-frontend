@@ -36,3 +36,15 @@ export function useDeleteSupplier() {
 		onError: (err: Error) => toast.error(err.message),
 	});
 }
+
+export function useSupplier(id: string) {
+	return useQuery({ queryKey: ["supplier", id], queryFn: () => supplierApi.get(id), enabled: !!id });
+}
+
+export function useSupplierStatement(id: string, currency?: string) {
+	return useQuery({
+		queryKey: ["supplier-statement", id, currency],
+		queryFn: () => supplierApi.statement(id, currency),
+		enabled: !!id,
+	});
+}

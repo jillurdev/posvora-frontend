@@ -1,5 +1,5 @@
 import { httpClient } from "@/services/httpClient";
-import type { Account, Expense, ExpenseCategory } from "./types";
+import type { Account, DailyClosing, Expense, ExpenseCategory, ProfitAndLoss, TrialBalance } from "./types";
 
 export const accountingApi = {
 	listAccounts: (shopId: string) => httpClient.get<Account[]>("/accounting/accounts", { shopId }),
@@ -13,8 +13,9 @@ export const accountingApi = {
 		httpClient.get<Expense[]>("/accounting/expenses", params),
 	createExpense: (payload: { branchId: string; categoryId: string; amount: number; frequency?: string; note?: string }) =>
 		httpClient.post<Expense>("/accounting/expenses", payload),
-	closeDay: (branchId: string, payload: { closingCash: number; note?: string }) =>
-		httpClient.post(`/accounting/branches/${branchId}/close-day`, payload),
-	profitLoss: (branchId: string, params?: { from?: string; to?: string }) =>
-		httpClient.get(`/accounting/branches/${branchId}/profit-loss`, params),
+	closeDay: (branchId: string, payload: { date: string; openingCash: number; closingCash: number }) =>
+		httpClient.post<DailyClosing>(`/accounting/branches/${branchId}/close-day`, payload),
+	profitLoss: (branchId: string, params: { from: string; to: string }) =>
+		httpClient.get<ProfitAndLoss>(`/accounting/branches/${branchId}/profit-loss`, params),
+	trialBalance: (shopId: string) => httpClient.get<TrialBalance>("/accounting/trial-balance", { shopId }),
 };

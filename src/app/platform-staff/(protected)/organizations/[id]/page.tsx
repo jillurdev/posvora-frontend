@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Building2, Mail, Phone, Store } from "lucide-react";
+import { ArrowLeft, Building2, Mail, Phone, Store, Warehouse } from "lucide-react";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -135,15 +135,37 @@ export default function OrganizationDetailPage() {
 										{shop.isActive ? <Badge tone="success">Active</Badge> : <Badge tone="danger">Inactive</Badge>}
 									</div>
 									{shop.branches && shop.branches.length > 0 ? (
-										<ul className="mt-2 space-y-1 border-l border-slate-100 pl-3">
+										<ul className="mt-2 space-y-1.5 border-l border-slate-100 pl-3">
 											{shop.branches.map(branch => (
-												<li key={branch.id} className="flex items-center justify-between text-xs text-slate-600">
-													<span>
-														{branch.name}
-														{branch.code ? ` (${branch.code})` : ""}
-														{branch.isMain ? " · Main" : ""}
-													</span>
-													{branch.isActive ? <Badge tone="success">Active</Badge> : <Badge tone="danger">Inactive</Badge>}
+												<li key={branch.id} className="text-xs text-slate-600">
+													<div className="flex items-center justify-between">
+														<span>
+															{branch.name}
+															{branch.code ? ` (${branch.code})` : ""}
+															{branch.isMain ? " · Main" : ""}
+														</span>
+														{branch.isActive ? <Badge tone="success">Active</Badge> : <Badge tone="danger">Inactive</Badge>}
+													</div>
+													{branch.warehouses && branch.warehouses.length > 0 ? (
+														<ul className="mt-1 space-y-0.5 border-l border-slate-100 pl-3">
+															{branch.warehouses.map(warehouse => (
+																<li key={warehouse.id} className="flex items-center justify-between text-xs text-slate-500">
+																	<span className="flex items-center gap-1">
+																		<Warehouse className="h-3 w-3 text-slate-400" />
+																		{warehouse.name}
+																		{warehouse.isDefault ? " · Default" : ""}
+																	</span>
+																	{warehouse.isActive ? (
+																		<Badge tone="success">Active</Badge>
+																	) : (
+																		<Badge tone="danger">Inactive</Badge>
+																	)}
+																</li>
+															))}
+														</ul>
+													) : (
+														<p className="mt-1 pl-3 text-xs text-slate-400">No warehouses yet.</p>
+													)}
 												</li>
 											))}
 										</ul>

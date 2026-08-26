@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
-import { Minus, Plus, Search, ShoppingCart, Trash2, X } from "lucide-react";
+import { Minus, Plus, Search, ShoppingCart, Trash2, X, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 
@@ -75,6 +75,16 @@ export default function PosPage() {
 	});
 	const exchangeRate = isForeignCurrency ? (rateQuote?.rate ?? 1) : 1;
 	const formatCart = (amount: number) => formatMoneyIn(amount, effectiveCurrency);
+
+	// Cross-checks the quote above against how old the underlying stored
+	// rate actually is, so a cashier isn't silently trusting a rate that
+	// hasn't synced in days — the quote endpoint itself doesn't report
+	// staleness, only checkFreshness() does.
+	const { data: rateFreshness } = useQuery({
+		queryKey: ["currency-freshness", shopCurrency, effectiveCurrency],
+		queryFn: () => currencyService.freshness(shopCurrency, effectiveCurrency),
+		enabled: isForeignCurrency,
+	});
 
 	const { data: allBranches = [] } = useBranches();
 	const branches = useMemo(() => allBranches.filter(b => b.shopId === activeShopId), [allBranches, activeShopId]);
@@ -341,9 +351,17 @@ export default function PosPage() {
 				</Select>
 			</div>
 			{isForeignCurrency && (
-				<p className="-mt-2 mb-4 text-xs text-slate-400">
+				<p className="-mt-2 mb-1 text-xs text-slate-400">
 					Selling in {effectiveCurrency} — converted at 1 {shopCurrency} = {exchangeRate.toFixed(4)} {effectiveCurrency}
 					{rateQuote ? "" : " (fetching live rate…)"}.
+				</p>
+			)}
+			{isForeignCurrency && rateFreshness?.isStale && (
+				<p className="-mt-2 mb-4 flex items-center gap-1.5 text-xs font-medium text-amber-600">
+					<AlertTriangle className="h-3.5 w-3.5" />
+					{rateFreshness.hasRate
+						? `This rate is ${Math.round(rateFreshness.ageHours ?? 0)}h old and may be out of date.`
+						: "No exchange rate on file for this pair yet — using a fallback."}
 				</p>
 			)}
 

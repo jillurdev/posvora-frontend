@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Plus, Trash2, Truck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { PageHeader } from "@/components/common/PageHeader";
@@ -17,6 +18,8 @@ import { useSuppliers, useCreateSupplier, useDeleteSupplier } from "@/features/s
 import type { Supplier, SupplierPayload } from "@/features/supplier/types";
 
 export default function SuppliersPage() {
+	const router = useRouter();
+	const { orgHandle } = useParams<{ orgHandle: string }>();
 	const { activeShopId, shops } = useActiveShop();
 	const { page, limit, setPage } = usePagination(10);
 	const [search, setSearch] = useState("");
@@ -62,7 +65,10 @@ export default function SuppliersPage() {
 		{
 			header: "",
 			accessor: s => (
-				<button onClick={() => deleteSupplier.mutate(s.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
+				<button
+					onClick={e => { e.stopPropagation(); deleteSupplier.mutate(s.id); }}
+					className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
+				>
 					<Trash2 className="h-4 w-4" />
 				</button>
 			),
@@ -81,7 +87,14 @@ export default function SuppliersPage() {
 				<SearchInput value={search} onChange={setSearch} placeholder="Search suppliers..." />
 			</div>
 
-			<DataTable columns={columns} data={data?.data ?? []} isLoading={isLoading} rowKey={s => s.id} emptyTitle="No suppliers yet" />
+			<DataTable
+				columns={columns}
+				data={data?.data ?? []}
+				isLoading={isLoading}
+				rowKey={s => s.id}
+				emptyTitle="No suppliers yet"
+				onRowClick={s => router.push(`/${orgHandle}/suppliers/${s.id}`)}
+			/>
 			{data?.meta && <Pagination page={data.meta.page} totalPages={data.meta.totalPages} onPageChange={setPage} />}
 
 			<Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Add supplier">
