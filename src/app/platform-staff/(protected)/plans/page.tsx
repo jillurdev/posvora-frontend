@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { TextField, SelectField, TextareaField } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import {
 	useAdminCreatePlan,
 	useAdminPlans,
@@ -48,6 +49,7 @@ export default function PlansPage() {
 	const { data: plans, isLoading } = useAdminPlans();
 	const createPlan = useAdminCreatePlan();
 	const togglePlan = useAdminTogglePlan();
+	const confirm = useConfirm();
 
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
@@ -95,6 +97,19 @@ export default function PlansPage() {
 
 	const isSaving = editingPlan ? updatePlan.isPending : createPlan.isPending;
 
+	const onToggle = async (plan: Plan) => {
+		const deactivating = plan.isActive;
+		const result = await confirm({
+			title: deactivating ? "Deactivate this plan?" : "Activate this plan?",
+			description: deactivating
+				? `"${plan.name}" will no longer be selectable for new subscriptions. Existing subscribers (${plan._count?.subscriptions ?? 0}) keep their current plan.`
+				: `"${plan.name}" will become available for new subscriptions again.`,
+			confirmLabel: deactivating ? "Deactivate" : "Activate",
+			variant: deactivating ? "danger" : "primary",
+		});
+		if (result) togglePlan.mutate({ id: plan.id, isActive: !plan.isActive });
+	};
+
 	const columns: Column<Plan>[] = [
 		{ header: "Plan", accessor: p => <span className="font-medium text-slate-900">{p.name}</span> },
 		{
@@ -123,7 +138,7 @@ export default function PlansPage() {
 						variant="outline"
 						size="sm"
 						isLoading={togglePlan.isPending}
-						onClick={() => togglePlan.mutate({ id: p.id, isActive: !p.isActive })}>
+						onClick={() => onToggle(p)}>
 						{p.isActive ? "Deactivate" : "Activate"}
 					</Button>
 				</div>

@@ -13,6 +13,7 @@ import { Modal } from "@/components/ui/Modal";
 import { TextField } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useActiveShop } from "@/context/ActiveShopContext";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import { usePagination } from "@/hooks/usePagination";
 import { useCustomers, useCreateCustomer, useDeleteCustomer } from "@/features/customer/hooks/useCustomers";
 import type { Customer, CustomerPayload } from "@/features/customer/types";
@@ -28,7 +29,18 @@ export default function CustomersPage() {
 	const { data, isLoading } = useCustomers(activeShopId ?? "", { search: search || undefined, page, limit });
 	const createCustomer = useCreateCustomer();
 	const deleteCustomer = useDeleteCustomer();
+	const confirm = useConfirm();
 	const { register, handleSubmit, reset } = useForm<CustomerPayload>();
+
+	async function handleDelete(customer: Customer) {
+		const result = await confirm({
+			title: "Delete this customer?",
+			description: `This will permanently delete "${customer.name}". Their sales history stays intact, but the customer record itself can't be recovered.`,
+			confirmLabel: "Delete",
+			variant: "danger",
+		});
+		if (result) deleteCustomer.mutate(customer.id);
+	}
 
 	if (shops.length === 0) {
 		return <EmptyState icon={Users} title="Create a shop first" description="Add a shop before managing customers." />;
@@ -71,7 +83,7 @@ export default function CustomersPage() {
 			header: "",
 			accessor: c => (
 				<button
-					onClick={e => { e.stopPropagation(); deleteCustomer.mutate(c.id); }}
+					onClick={e => { e.stopPropagation(); handleDelete(c); }}
 					className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
 				>
 					<Trash2 className="h-4 w-4" />

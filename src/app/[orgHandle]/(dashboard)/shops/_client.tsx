@@ -9,6 +9,7 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { TextField, SelectField } from "@/components/ui/Field";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import { useShops, useCreateShop, useUpdateShop, useDeleteShop } from "@/features/shop/hooks/useShops";
 import type { Shop, ShopPayload } from "@/features/shop/types";
 import { CURRENCIES } from "@/lib/currencies";
@@ -19,6 +20,7 @@ export default function ShopsPage() {
 	const createShop = useCreateShop();
 	const updateShop = useUpdateShop();
 	const deleteShop = useDeleteShop();
+	const confirm = useConfirm();
 
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editing, setEditing] = useState<Shop | null>(null);
@@ -45,6 +47,16 @@ export default function ShopsPage() {
 		});
 		setModalOpen(true);
 	};
+
+	async function handleDelete(shop: Shop) {
+		const result = await confirm({
+			title: "Delete this shop?",
+			description: `This will permanently delete "${shop.name}" along with its branches, warehouses, and staff assignments. This can't be undone.`,
+			confirmLabel: "Delete",
+			variant: "danger",
+		});
+		if (result) deleteShop.mutate(shop.id);
+	}
 
 	// Only on NEW shops: picking a country pre-fills a sensible default
 	// currency, saving a step — but never overrides an existing shop's
@@ -97,7 +109,7 @@ export default function ShopsPage() {
 					<button onClick={() => openEdit(s)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
 						<Pencil className="h-4 w-4" />
 					</button>
-					<button onClick={() => deleteShop.mutate(s.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
+					<button onClick={() => handleDelete(s)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
 						<Trash2 className="h-4 w-4" />
 					</button>
 				</div>

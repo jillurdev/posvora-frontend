@@ -13,6 +13,7 @@ import { Modal } from "@/components/ui/Modal";
 import { TextField } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useActiveShop } from "@/context/ActiveShopContext";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import { usePagination } from "@/hooks/usePagination";
 import { useSuppliers, useCreateSupplier, useDeleteSupplier } from "@/features/supplier/hooks/useSuppliers";
 import type { Supplier, SupplierPayload } from "@/features/supplier/types";
@@ -28,7 +29,18 @@ export default function SuppliersPage() {
 	const { data, isLoading } = useSuppliers(activeShopId ?? "", { search: search || undefined, page, limit });
 	const createSupplier = useCreateSupplier();
 	const deleteSupplier = useDeleteSupplier();
+	const confirm = useConfirm();
 	const { register, handleSubmit, reset } = useForm<SupplierPayload>();
+
+	async function handleDelete(supplier: Supplier) {
+		const result = await confirm({
+			title: "Delete this supplier?",
+			description: `This will permanently delete "${supplier.name}". Their purchase history stays intact, but the supplier record itself can't be recovered.`,
+			confirmLabel: "Delete",
+			variant: "danger",
+		});
+		if (result) deleteSupplier.mutate(supplier.id);
+	}
 
 	if (shops.length === 0) {
 		return <EmptyState icon={Truck} title="Create a shop first" description="Add a shop before managing suppliers." />;
@@ -66,7 +78,7 @@ export default function SuppliersPage() {
 			header: "",
 			accessor: s => (
 				<button
-					onClick={e => { e.stopPropagation(); deleteSupplier.mutate(s.id); }}
+					onClick={e => { e.stopPropagation(); handleDelete(s); }}
 					className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
 				>
 					<Trash2 className="h-4 w-4" />

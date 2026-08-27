@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { TextField, SelectField } from "@/components/ui/Field";
 import { Modal } from "@/components/ui/Modal";
 import { useAdminAuth } from "@/context/AdminAuthContext";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import { useAdminCreateStaff, useAdminStaff, useAdminToggleStaff } from "@/features/platform-staff/hooks/useSuperAdmin";
 import type { CreatePlatformAdminPayload, PlatformAdmin } from "@/features/platform-staff/types";
 import { formatDateTime } from "@/lib/utils";
@@ -28,6 +29,7 @@ export default function PlatformStaffPage() {
 	const { data: staff, isLoading, error } = useAdminStaff();
 	const createStaff = useAdminCreateStaff();
 	const toggleStaff = useAdminToggleStaff();
+	const confirm = useConfirm();
 
 	const [modalOpen, setModalOpen] = useState(false);
 	const [form, setForm] = useState<CreatePlatformAdminPayload>(emptyForm);
@@ -50,6 +52,19 @@ export default function PlatformStaffPage() {
 			</div>
 		);
 	}
+
+	const onToggle = async (member: PlatformAdmin) => {
+		const deactivating = member.isActive;
+		const result = await confirm({
+			title: deactivating ? "Deactivate this staff member?" : "Reactivate this staff member?",
+			description: deactivating
+				? `"${member.name}" will immediately lose access to the platform-staff dashboard.`
+				: `"${member.name}" will regain access to the platform-staff dashboard.`,
+			confirmLabel: deactivating ? "Deactivate" : "Reactivate",
+			variant: deactivating ? "danger" : "primary",
+		});
+		if (result) toggleStaff.mutate({ id: member.id, isActive: !member.isActive });
+	};
 
 	const handleSubmit = () => {
 		createStaff.mutate(form, {
@@ -78,7 +93,7 @@ export default function PlatformStaffPage() {
 						variant="outline"
 						size="sm"
 						isLoading={toggleStaff.isPending}
-						onClick={() => toggleStaff.mutate({ id: a.id, isActive: !a.isActive })}>
+						onClick={() => onToggle(a)}>
 						{a.isActive ? "Deactivate" : "Reactivate"}
 					</Button>
 				);

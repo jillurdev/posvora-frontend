@@ -12,6 +12,7 @@ import { TextField, SelectField } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/EmptyState";
 
 import { useActiveShop } from "@/context/ActiveShopContext";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import { useRoles } from "@/features/role/hooks/useRoles";
 import {
 	useEmployees,
@@ -33,9 +34,20 @@ export default function EmployeesPage() {
 
 	const createEmployee = useCreateEmployee();
 	const deleteEmployee = useDeleteEmployee();
+	const confirm = useConfirm();
 	const { data: roles = [] } = useRoles();
 
 	const [modalOpen, setModalOpen] = useState(false);
+
+	async function handleDelete(employee: Employee) {
+		const result = await confirm({
+			title: "Delete this employee?",
+			description: `This will permanently remove "${employee.name}" from your team. This can't be undone.`,
+			confirmLabel: "Delete",
+			variant: "danger",
+		});
+		if (result) deleteEmployee.mutate(employee.id);
+	}
 
 	const {
 		register,
@@ -94,7 +106,7 @@ export default function EmployeesPage() {
 			accessor: employee => (
 				<button
 					type="button"
-					onClick={() => deleteEmployee.mutate(employee.id)}
+					onClick={() => handleDelete(employee)}
 					className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-500">
 					<Trash2 className="h-4 w-4" />
 				</button>

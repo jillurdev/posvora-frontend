@@ -10,45 +10,66 @@ import {
 } from "react";
 import { Modal } from "@/components/ui/Modal";
 import { Button, type ButtonProps } from "@/components/ui/Button";
+import { Textarea } from "@/components/ui/Input";
+
+interface ConfirmInputOptions {
+	label: string;
+	placeholder?: string;
+	required?: boolean;
+}
 
 interface ConfirmOptions {
 	title: string;
 	description?: string;
 	confirmLabel?: string;
 	cancelLabel?: string;
-	/** "danger" for destructive actions (delete, deactivate, etc). */
+	/** "danger" for destructive actions (delete, deactivate, reject, etc). */
 	variant?: ButtonProps["variant"];
+	/** Optional free-text field (e.g. a rejection/suspension reason) shown inside the dialog. */
+	input?: ConfirmInputOptions;
 }
 
-type ConfirmFn = (options: ConfirmOptions) => Promise<boolean>;
+/** Resolves to `false` when cancelled, or `{ note }` (note may be "") when confirmed. */
+type ConfirmResult = false | { note: string };
+type ConfirmFn = (options: ConfirmOptions) => Promise<ConfirmResult>;
 
 const ConfirmDialogContext = createContext<ConfirmFn | null>(null);
 
 /**
  * App-wide confirm dialog. Mount once in Providers; call `useConfirm()`
  * anywhere and `await` the result instead of wiring up a one-off modal
- * per page for "are you sure you want to delete this?" flows.
+ * per page for "are you sure you want to delete this?" (or "reject",
+ * "suspend", "deactivate", etc) flows.
  *
- * Usage:
+ * Usage (simple):
  *   const confirm = useConfirm();
- *   const ok = await confirm({ title: "Delete branch?", description: "...", variant: "danger" });
- *   if (ok) deleteBranch.mutate(id);
+ *   const result = await confirm({ title: "Delete branch?", description: "...", variant: "danger" });
+ *   if (result) deleteBranch.mutate(id);
+ *
+ * Usage (with a reason/note, e.g. rejecting a KYC document):
+ *   const result = await confirm({ title: "Reject document?", input: { label: "Reason (shown to the organization)" }, variant: "danger" });
+ *   if (result) review({ id, approve: false, note: result.note || undefined });
  */
 export function ConfirmDialogProvider({ children }: { children: ReactNode }) {
 	const [options, setOptions] = useState<ConfirmOptions | null>(null);
-	const resolveRef = useRef<(value: boolean) => void>();
+	const [noteValue, setNoteValue] = useState("");
+	const resolveRef = useRef<(value: ConfirmResult) => void>();
 
 	const confirm = useCallback<ConfirmFn>(opts => {
 		setOptions(opts);
-		return new Promise<boolean>(resolve => {
+		setNoteValue("");
+		return new Promise<ConfirmResult>(resolve => {
 			resolveRef.current = resolve;
 		});
 	}, []);
 
-	function close(result: boolean) {
+	function close(result: ConfirmResult) {
 		resolveRef.current?.(result);
 		setOptions(null);
+		setNoteValue("");
 	}
+
+	const canConfirm = !options?.input?.required || noteValue.trim().length > 0;
 
 	return (
 		<ConfirmDialogContext.Provider value={confirm}>
@@ -62,13 +83,27 @@ export function ConfirmDialogProvider({ children }: { children: ReactNode }) {
 				{options?.description && (
 					<p className="text-sm text-slate-600">{options.description}</p>
 				)}
+				{options?.input && (
+					<div className="mt-4">
+						<label className="mb-1 block text-sm font-medium text-slate-700">
+							{options.input.label}
+						</label>
+						<Textarea
+							rows={3}
+							value={noteValue}
+							placeholder={options.input.placeholder}
+							onChange={e => setNoteValue(e.target.value)}
+						/>
+					</div>
+				)}
 				<div className="mt-6 flex justify-end gap-2">
 					<Button variant="outline" onClick={() => close(false)}>
 						{options?.cancelLabel ?? "Cancel"}
 					</Button>
 					<Button
 						variant={options?.variant ?? "primary"}
-						onClick={() => close(true)}>
+						disabled={!canConfirm}
+						onClick={() => close({ note: noteValue.trim() })}>
 						{options?.confirmLabel ?? "Confirm"}
 					</Button>
 				</div>

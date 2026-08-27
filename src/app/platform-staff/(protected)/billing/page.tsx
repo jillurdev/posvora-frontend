@@ -6,6 +6,7 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Input";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import {
 	useAdminBillingSummary,
 	useAdminInvoices,
@@ -48,10 +49,16 @@ export default function AdminBillingPage() {
 	const [page, setPage] = useState(1);
 	const { data, isLoading } = useAdminInvoices({ page, limit: 20, status: status || undefined });
 	const { mutate: markPaid, isPending } = useMarkInvoicePaid();
+	const confirm = useConfirm();
 
-	const onMarkPaid = (id: string) => {
-		const note = window.prompt("Optional note (e.g. bKash TrxID, bank reference):") ?? undefined;
-		markPaid({ id, note });
+	const onMarkPaid = async (invoice: AdminInvoice) => {
+		const result = await confirm({
+			title: "Mark this invoice as paid?",
+			description: `This marks ${invoice.subscription.organization.name}'s ${formatMoney(invoice.amount, invoice.currency || "BDT")} invoice as paid. Only do this after confirming the payment was actually received.`,
+			confirmLabel: "Mark as paid",
+			input: { label: "Reference (optional)", placeholder: "e.g. bKash TrxID, bank reference" },
+		});
+		if (result) markPaid({ id: invoice.id, note: result.note || undefined });
 	};
 
 	const columns: Column<AdminInvoice>[] = [
@@ -66,7 +73,7 @@ export default function AdminBillingPage() {
 			header: "Actions",
 			accessor: i =>
 				i.status === "UNPAID" ? (
-					<Button size="sm" onClick={() => onMarkPaid(i.id)} disabled={isPending}>
+					<Button size="sm" onClick={() => onMarkPaid(i)} disabled={isPending}>
 						Mark as paid
 					</Button>
 				) : (

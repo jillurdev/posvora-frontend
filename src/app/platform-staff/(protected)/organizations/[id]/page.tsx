@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import {
 	useAdminAssignSubscription,
 	useAdminOrganization,
@@ -29,6 +30,7 @@ export default function OrganizationDetailPage() {
 	const { data: plans } = useAdminPlans();
 	const toggleOrg = useAdminToggleOrganization();
 	const assignSubscription = useAdminAssignSubscription(params.id);
+	const confirm = useConfirm();
 
 	const [planModalOpen, setPlanModalOpen] = useState(false);
 	const [selectedPlanId, setSelectedPlanId] = useState("");
@@ -42,6 +44,19 @@ export default function OrganizationDetailPage() {
 	}
 
 	if (!org) return null;
+
+	const onToggle = async () => {
+		const suspending = org.isActive;
+		const result = await confirm({
+			title: suspending ? "Suspend this organization?" : "Reactivate this organization?",
+			description: suspending
+				? `"${org.name}" and its staff will immediately lose access to Posvora until reactivated.`
+				: `"${org.name}" will regain access to Posvora.`,
+			confirmLabel: suspending ? "Suspend" : "Reactivate",
+			variant: suspending ? "danger" : "primary",
+		});
+		if (result) toggleOrg.mutate({ id: org.id, isActive: !org.isActive });
+	};
 
 	const openPlanModal = () => {
 		setSelectedPlanId(org.subscription?.plan?.id ?? plans?.[0]?.id ?? "");
@@ -72,7 +87,7 @@ export default function OrganizationDetailPage() {
 						<Button
 							variant="outline"
 							isLoading={toggleOrg.isPending}
-							onClick={() => toggleOrg.mutate({ id: org.id, isActive: !org.isActive })}>
+							onClick={onToggle}>
 							{org.isActive ? "Suspend organization" : "Reactivate organization"}
 						</Button>
 					</div>

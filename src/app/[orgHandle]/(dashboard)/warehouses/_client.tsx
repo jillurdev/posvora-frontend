@@ -11,6 +11,7 @@ import { TextField, SelectField } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Badge } from "@/components/ui/Badge";
 import { useBranches } from "@/features/branch/hooks/useBranches";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import { useWarehouses, useCreateWarehouse, useDeleteWarehouse } from "@/features/warehouse/hooks/useWarehouses";
 import type { Warehouse, WarehousePayload } from "@/features/warehouse/types";
 
@@ -19,6 +20,7 @@ export default function WarehousesPage() {
 	const { data: warehouses = [], isLoading } = useWarehouses();
 	const createWarehouse = useCreateWarehouse();
 	const deleteWarehouse = useDeleteWarehouse();
+	const confirm = useConfirm();
 	const [modalOpen, setModalOpen] = useState(false);
 	const { register, handleSubmit, reset } = useForm<WarehousePayload>();
 
@@ -32,6 +34,16 @@ export default function WarehousesPage() {
 		createWarehouse.mutate(values, { onSuccess: () => { reset(); setModalOpen(false); } });
 	};
 
+	async function handleDelete(warehouse: Warehouse) {
+		const result = await confirm({
+			title: "Delete this warehouse?",
+			description: `This will permanently delete "${warehouse.name}". Deletion is blocked if it still has stock — move or clear inventory first.`,
+			confirmLabel: "Delete",
+			variant: "danger",
+		});
+		if (result) deleteWarehouse.mutate(warehouse.id);
+	}
+
 	const columns: Column<Warehouse>[] = [
 		{ header: "Name", accessor: w => <span className="font-medium text-slate-900">{w.name}</span> },
 		{ header: "Branch", accessor: w => branchName(w.branchId) },
@@ -40,7 +52,7 @@ export default function WarehousesPage() {
 		{
 			header: "",
 			accessor: w => (
-				<button onClick={() => deleteWarehouse.mutate(w.id)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
+				<button onClick={() => handleDelete(w)} className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
 					<Trash2 className="h-4 w-4" />
 				</button>
 			),

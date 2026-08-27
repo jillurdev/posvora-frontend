@@ -6,6 +6,7 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Input";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import {
 	useAdminKycDocuments,
 	useAdminReviewKycDocument,
@@ -23,11 +24,26 @@ export default function AdminKycPage() {
 	const [status, setStatus] = useState("PENDING");
 	const { data: documents = [], isLoading } = useAdminKycDocuments(status || undefined);
 	const { mutate: review, isPending } = useAdminReviewKycDocument();
+	const confirm = useConfirm();
 
-	const onApprove = (id: string) => review({ id, approve: true });
-	const onReject = (id: string) => {
-		const note = window.prompt("Reason for rejection (shown to the organization):") ?? undefined;
-		review({ id, approve: false, note });
+	const onApprove = async (doc: KycDocument) => {
+		const result = await confirm({
+			title: "Approve this document?",
+			description: `This marks the ${doc.type.replace("_", " ").toLowerCase()} submitted by ${doc.organization?.name ?? "this organization"} as verified.`,
+			confirmLabel: "Approve",
+		});
+		if (result) review({ id: doc.id, approve: true });
+	};
+
+	const onReject = async (doc: KycDocument) => {
+		const result = await confirm({
+			title: "Reject this document?",
+			description: `This marks the ${doc.type.replace("_", " ").toLowerCase()} submitted by ${doc.organization?.name ?? "this organization"} as rejected.`,
+			confirmLabel: "Reject",
+			variant: "danger",
+			input: { label: "Reason (shown to the organization)", placeholder: "e.g. Document is blurry / expired / mismatched name" },
+		});
+		if (result) review({ id: doc.id, approve: false, note: result.note || undefined });
 	};
 
 	const columns: Column<KycDocument>[] = [
@@ -49,10 +65,10 @@ export default function AdminKycPage() {
 			accessor: d =>
 				d.status === "PENDING" ? (
 					<div className="flex gap-2">
-						<Button size="sm" onClick={() => onApprove(d.id)} disabled={isPending}>
+						<Button size="sm" onClick={() => onApprove(d)} disabled={isPending}>
 							Approve
 						</Button>
-						<Button size="sm" variant="outline" onClick={() => onReject(d.id)} disabled={isPending}>
+						<Button size="sm" variant="outline" onClick={() => onReject(d)} disabled={isPending}>
 							Reject
 						</Button>
 					</div>

@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/Modal";
 import { FormField } from "@/components/ui/FormField";
 import { TextField } from "@/components/ui/Field";
 import { Badge } from "@/components/ui/Badge";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import {
 	useRoles,
 	usePermissions,
@@ -24,6 +25,7 @@ export default function RolesPage() {
 	const createRole = useCreateRole();
 	const updateRole = useUpdateRole();
 	const deleteRole = useDeleteRole();
+	const confirm = useConfirm();
 
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editingRole, setEditingRole] = useState<Role | null>(null);
@@ -51,6 +53,16 @@ export default function RolesPage() {
 	const closeModal = () => {
 		setModalOpen(false);
 		setEditingRole(null);
+	};
+
+	const handleDelete = async (role: Role) => {
+		const result = await confirm({
+			title: "Delete this role?",
+			description: `This will permanently delete "${role.name}". Employees assigned to it will lose these permissions. This can't be undone.`,
+			confirmLabel: "Delete",
+			variant: "danger",
+		});
+		if (result) deleteRole.mutate(role.id);
 	};
 
 	const handleSubmit = () => {
@@ -90,7 +102,7 @@ export default function RolesPage() {
 						</span>
 					) : (
 						<button
-							onClick={() => deleteRole.mutate(r.id)}
+							onClick={() => handleDelete(r)}
 							title="Delete role"
 							className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500">
 							<Trash2 className="h-4 w-4" />

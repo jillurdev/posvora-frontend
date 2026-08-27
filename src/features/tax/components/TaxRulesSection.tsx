@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { SelectField, TextField } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import { useCategories } from "@/features/product/hooks/useCatalog";
 import { useCreateTaxRule, useDeleteTaxRule, useTaxRules, useUpdateTaxRule } from "@/features/tax/hooks/useTaxRules";
 
@@ -25,6 +26,7 @@ export function TaxRulesSection({ shopId }: TaxRulesSectionProps) {
 	const createRule = useCreateTaxRule();
 	const updateRule = useUpdateTaxRule(shopId);
 	const deleteRule = useDeleteTaxRule(shopId);
+	const confirm = useConfirm();
 
 	const [name, setName] = useState("");
 	const [ratePercent, setRatePercent] = useState("");
@@ -63,6 +65,16 @@ export function TaxRulesSection({ shopId }: TaxRulesSectionProps) {
 		return rule.isDefault ? "Shop-wide default" : "No scope (inactive until scoped or set as default)";
 	};
 
+	const onDelete = async (rule: { id: string; name: string }) => {
+		const result = await confirm({
+			title: "Delete this tax rule?",
+			description: `This will permanently delete "${rule.name}". Sales that already used it keep their recorded VAT — only future calculations are affected.`,
+			confirmLabel: "Delete",
+			variant: "danger",
+		});
+		if (result) deleteRule.mutate(rule.id);
+	};
+
 	return (
 		<div className="space-y-4">
 			<p className="text-sm text-slate-500">
@@ -98,7 +110,7 @@ export function TaxRulesSection({ shopId }: TaxRulesSectionProps) {
 									{rule.isActive ? "Disable" : "Enable"}
 								</button>
 								<button
-									onClick={() => deleteRule.mutate(rule.id)}
+									onClick={() => onDelete(rule)}
 									className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
 									aria-label={`Remove ${rule.name}`}
 								>

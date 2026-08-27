@@ -8,6 +8,7 @@ import { Pagination } from "@/components/common/Pagination";
 import { SearchInput } from "@/components/common/SearchInput";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import { useAdminOrganizations, useAdminToggleOrganization } from "@/features/platform-staff/hooks/useSuperAdmin";
 import type { AdminOrganization } from "@/features/platform-staff/types";
 import { formatDate } from "@/lib/utils";
@@ -17,6 +18,20 @@ export default function OrganizationsPage() {
 	const [search, setSearch] = useState("");
 	const { data, isLoading } = useAdminOrganizations({ page, limit: 20, search: search || undefined });
 	const toggle = useAdminToggleOrganization();
+	const confirm = useConfirm();
+
+	const onToggle = async (org: AdminOrganization) => {
+		const suspending = org.isActive;
+		const result = await confirm({
+			title: suspending ? "Suspend this organization?" : "Reactivate this organization?",
+			description: suspending
+				? `"${org.name}" and its staff will immediately lose access to Posvora until reactivated.`
+				: `"${org.name}" will regain access to Posvora.`,
+			confirmLabel: suspending ? "Suspend" : "Reactivate",
+			variant: suspending ? "danger" : "primary",
+		});
+		if (result) toggle.mutate({ id: org.id, isActive: !org.isActive });
+	};
 
 	const columns: Column<AdminOrganization>[] = [
 		{
@@ -39,7 +54,7 @@ export default function OrganizationsPage() {
 					variant="outline"
 					size="sm"
 					isLoading={toggle.isPending}
-					onClick={() => toggle.mutate({ id: o.id, isActive: !o.isActive })}>
+					onClick={() => onToggle(o)}>
 					{o.isActive ? "Suspend" : "Reactivate"}
 				</Button>
 			),

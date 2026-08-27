@@ -6,6 +6,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { SelectField, TextField } from "@/components/ui/Field";
+import { useConfirm } from "@/context/ConfirmDialogContext";
 import { currencyService } from "@/services/currency.service";
 import { useProductPrices, useUpsertProductPrice, useRemoveProductPrice } from "../hooks/useProducts";
 import type { Product } from "../types";
@@ -27,9 +28,9 @@ interface ProductPricesModalProps {
 export function ProductPricesModal({ product, open, onClose }: ProductPricesModalProps) {
 	const { data: currencies } = useQuery({ queryKey: ["currencies"], queryFn: () => currencyService.list() });
 	const { data: prices, isLoading } = useProductPrices(product?.id);
-	console.log("🚀 ~ ProductPricesModal ~ prices:", prices)
 	const upsertPrice = useUpsertProductPrice();
 	const removePrice = useRemoveProductPrice();
+	const confirm = useConfirm();
 
 	const [currencyCode, setCurrencyCode] = useState("");
 	const [sellingPrice, setSellingPrice] = useState("");
@@ -54,6 +55,16 @@ export function ProductPricesModal({ product, open, onClose }: ProductPricesModa
 		);
 	};
 
+	const onRemove = async (currencyCode: string) => {
+		const result = await confirm({
+			title: "Remove this price override?",
+			description: `Checkout will fall back to converting the shop-currency price at the live exchange rate for ${currencyCode}.`,
+			confirmLabel: "Remove",
+			variant: "danger",
+		});
+		if (result) removePrice.mutate({ productId: product.id, currencyCode });
+	};
+
 	return (
 		<Modal open={open} onClose={onClose} title={`Multi-currency prices — ${product.name}`}>
 			<div className="space-y-4">
@@ -74,7 +85,7 @@ export function ProductPricesModal({ product, open, onClose }: ProductPricesModa
 									<span className="ml-2 text-slate-600">{p.sellingPrice.toFixed(2)}</span>
 								</div>
 								<button
-									onClick={() => removePrice.mutate({ productId: product.id, currencyCode: p.currencyCode })}
+									onClick={() => onRemove(p.currencyCode)}
 									className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
 									aria-label={`Remove ${p.currencyCode} price`}
 								>
