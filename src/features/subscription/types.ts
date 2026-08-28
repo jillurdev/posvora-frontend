@@ -1,3 +1,10 @@
+export interface PlanPrice {
+	currencyCode: string;
+	amount: number;
+	countryCode?: string | null;
+	billingCycle: "MONTHLY" | "YEARLY";
+}
+
 export interface Plan {
 	id: string;
 	name: string;
@@ -13,6 +20,10 @@ export interface Plan {
 	storageLimitMb?: number;
 	apiLimitPerDay?: number;
 	features?: string[];
+	// Per-currency list prices (BDT, USD, etc.) — populated on the public
+	// /subscription/plans endpoint. Absent/empty means only `price` (BDT)
+	// and optionally `priceUsd` apply.
+	prices?: PlanPrice[];
 }
 
 export interface Invoice {

@@ -61,7 +61,7 @@ export function PublicFooter() {
 					<span>
 						© {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
 					</span>
-					<span className="font-[var(--font-mk-mono)] text-xs text-[var(--mk-ink-soft)]/70">Made for shops across Bangladesh</span>
+					<span className="font-[var(--font-mk-mono)] text-xs text-[var(--mk-ink-soft)]/70">Built for shops everywhere</span>
 				</div>
 			</div>
 		</footer>

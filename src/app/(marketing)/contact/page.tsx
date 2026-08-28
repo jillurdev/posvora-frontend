@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { Mail, MapPin, Send, CheckCircle2 } from "lucide-react";
 import { TextField, TextareaField } from "@/components/ui/Field";
-import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 import { supportApi } from "@/features/support/api";
+import { Reveal } from "@/components/marketing/Reveal";
 
 export default function ContactPage() {
 	const [submitting, setSubmitting] = useState(false);
@@ -40,52 +40,64 @@ export default function ContactPage() {
 
 	return (
 		<div className="mx-auto max-w-5xl px-4 py-20 lg:px-8">
-			<span className="text-sm font-medium text-slate-400">Contact</span>
-			<h1 className="mt-2 text-4xl font-semibold text-slate-900">Let&apos;s talk</h1>
-			<p className="mt-4 max-w-xl text-lg text-slate-500">
+			<span className="inline-flex items-center gap-2 rounded-sm border border-[var(--mk-line)] bg-[var(--mk-paper-raised)] px-3 py-1 font-[var(--font-mk-mono)] text-xs text-[var(--mk-ink-soft)]">
+				<span className="h-1.5 w-1.5 rounded-full bg-[var(--mk-till)]" />
+				Contact
+			</span>
+			<h1 className="mt-4 font-[var(--font-mk-display)] text-4xl font-semibold tracking-tight text-[var(--mk-ink)]">
+				Let&apos;s talk
+			</h1>
+			<p className="mt-4 max-w-xl text-lg text-[var(--mk-ink-soft)]">
 				Have a question about pricing, a feature, or setting up your business? Send us a message.
 			</p>
 
 			<div className="mt-12 grid grid-cols-1 gap-12 lg:grid-cols-5">
-				<div className="lg:col-span-2 lg:border-r lg:border-slate-100 lg:pr-8">
+				<Reveal className="lg:col-span-2 lg:border-r lg:border-[var(--mk-line)] lg:pr-8">
 					<div className="space-y-6">
 						<div className="flex items-start gap-3">
-							<Mail className="mt-0.5 h-5 w-5 text-slate-400" />
+							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[var(--mk-till-soft)] text-[var(--mk-till-deep)]">
+								<Mail className="h-4 w-4" />
+							</div>
 							<div>
-								<p className="text-sm font-medium text-slate-900">Email</p>
-								<p className="text-sm text-slate-500">support@posvora.com</p>
+								<p className="text-sm font-medium text-[var(--mk-ink)]">Email</p>
+								<p className="text-sm text-[var(--mk-ink-soft)]">support@posvora.com</p>
 							</div>
 						</div>
 						<div className="flex items-start gap-3">
-							<MapPin className="mt-0.5 h-5 w-5 text-slate-400" />
+							<div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[var(--mk-till-soft)] text-[var(--mk-till-deep)]">
+								<MapPin className="h-4 w-4" />
+							</div>
 							<div>
-								<p className="text-sm font-medium text-slate-900">Office</p>
-								<p className="text-sm text-slate-500">Dhaka, Bangladesh</p>
+								<p className="text-sm font-medium text-[var(--mk-ink)]">Office</p>
+								<p className="text-sm text-[var(--mk-ink-soft)]">Dhaka, Bangladesh</p>
 							</div>
 						</div>
 					</div>
-				</div>
+				</Reveal>
 
-				<div className="lg:col-span-3">
+				<Reveal className="lg:col-span-3" delayMs={100}>
 					{submitted ? (
-						<div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6">
-							<CheckCircle2 className="h-8 w-8 text-emerald-600" />
-							<p className="mt-3 text-sm font-medium text-emerald-900">
+						<div className="rounded-xl border border-[var(--mk-till)]/30 bg-[var(--mk-till-soft)] p-6">
+							<CheckCircle2 className="h-8 w-8 text-[var(--mk-till-deep)]" />
+							<p className="mt-3 text-sm font-medium text-[var(--mk-till-deep)]">
 								Message sent — reference #{submitted.id.slice(0, 8)}
 							</p>
-							<p className="mt-1 text-sm text-emerald-700">
+							<p className="mt-1 text-sm text-[var(--mk-ink-soft)]">
 								You can{" "}
 								<a
 									href={`/support/track?id=${submitted.id}&token=${submitted.token}`}
-									className="font-medium underline"
+									className="font-medium text-[var(--mk-till-deep)] underline underline-offset-2"
 								>
 									track this ticket
 								</a>{" "}
 								anytime — save this link, it&apos;s the only way back in.
 							</p>
-							<Button variant="outline" size="sm" className="mt-4" onClick={() => setSubmitted(null)}>
+							<button
+								onClick={() => setSubmitted(null)}
+								className="mt-4 inline-flex h-9 items-center rounded-md border border-[var(--mk-till)]/30 px-4 text-sm font-medium text-[var(--mk-till-deep)] hover:bg-white/50"
+							>
 								Send another message
-							</Button>
+							</button>
 						</div>
 					) : (
 						<form onSubmit={handleSubmit} className="space-y-4">
@@ -102,12 +114,16 @@ export default function ContactPage() {
 								required
 								placeholder="Tell us what you need..."
 							/>
-							<Button type="submit" isLoading={submitting}>
-								<Send className="h-4 w-4" /> Send message
-							</Button>
+							<button
+								type="submit"
+								disabled={submitting}
+								className="inline-flex h-10 items-center gap-2 rounded-md bg-[var(--mk-till)] px-5 text-sm font-medium text-white transition-colors hover:bg-[var(--mk-till-deep)] disabled:opacity-50"
+							>
+								<Send className="h-4 w-4" /> {submitting ? "Sending…" : "Send message"}
+							</button>
 						</form>
 					)}
-				</div>
+				</Reveal>
 			</div>
 		</div>
 	);

@@ -14,6 +14,7 @@ import { supportApi } from "@/features/support/api";
 import { STATUS_LABEL, STATUS_TONE, PRIORITY_TONE } from "@/features/support/utils";
 import { formatDateTime, cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Reveal } from "@/components/marketing/Reveal";
 
 function LookupForm({ onLookup }: { onLookup: (id: string, token: string) => void }) {
 	const [id, setId] = useState("");
@@ -159,15 +160,24 @@ function TrackSupportContent() {
 
 	return (
 		<div className="mx-auto max-w-3xl px-4 py-16 lg:px-8">
-			<span className="text-sm font-medium text-slate-400">Support</span>
-			<h1 className="mt-2 text-3xl font-semibold text-slate-900">Track your ticket</h1>
-			<p className="mt-3 max-w-lg text-slate-500">
-				Enter the ticket ID and access token from your confirmation link to view replies and respond.
-			</p>
+			<Reveal>
+				<span className="inline-flex items-center gap-2 rounded-sm border border-[var(--mk-line)] bg-[var(--mk-paper-raised)] px-3 py-1 font-[var(--font-mk-mono)] text-xs text-[var(--mk-ink-soft)]">
+					<span className="h-1.5 w-1.5 rounded-full bg-[var(--mk-till)]" />
+					Support
+				</span>
+				<h1 className="mt-4 font-[var(--font-mk-display)] text-3xl font-semibold tracking-tight text-[var(--mk-ink)]">
+					Track your ticket
+				</h1>
+				<p className="mt-3 max-w-lg text-[var(--mk-ink-soft)]">
+					Enter the ticket ID and access token from your confirmation link to view replies and respond.
+				</p>
+			</Reveal>
 
-			<div className="mt-10">
-				{id && token ? <TicketThread id={id} token={token} /> : <LookupForm onLookup={(i, t) => setManual({ id: i, token: t })} />}
-			</div>
+			<Reveal delayMs={100}>
+				<div className="mt-10">
+					{id && token ? <TicketThread id={id} token={token} /> : <LookupForm onLookup={(i, t) => setManual({ id: i, token: t })} />}
+				</div>
+			</Reveal>
 		</div>
 	);
 }
