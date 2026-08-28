@@ -6,7 +6,7 @@ import { ArrowLeft, Building2, Mail, Phone, Store, Warehouse } from "lucide-reac
 import { PageHeader } from "@/components/common/PageHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Input";
+import { Input, Select } from "@/components/ui/Input";
 import { Modal } from "@/components/ui/Modal";
 import { Spinner } from "@/components/ui/Spinner";
 import { useConfirm } from "@/context/ConfirmDialogContext";
@@ -34,6 +34,8 @@ export default function OrganizationDetailPage() {
 
 	const [planModalOpen, setPlanModalOpen] = useState(false);
 	const [selectedPlanId, setSelectedPlanId] = useState("");
+	const [selectedStatus, setSelectedStatus] = useState<"ACTIVE" | "TRIALING" | "PAST_DUE" | "CANCELLED" | "EXPIRED">("ACTIVE");
+	const [customEndDate, setCustomEndDate] = useState("");
 
 	if (isLoading) {
 		return (
@@ -60,13 +62,21 @@ export default function OrganizationDetailPage() {
 
 	const openPlanModal = () => {
 		setSelectedPlanId(org.subscription?.plan?.id ?? plans?.[0]?.id ?? "");
+		setSelectedStatus("ACTIVE");
+		setCustomEndDate("");
 		setPlanModalOpen(true);
 	};
 
 	const handleAssignPlan = () => {
 		if (!selectedPlanId) return;
 		assignSubscription.mutate(
-			{ planId: selectedPlanId, status: "ACTIVE" },
+			{
+				planId: selectedPlanId,
+				status: selectedStatus,
+				// Only sent when the operator explicitly overrides it — otherwise
+				// the backend computes the period end from the plan's billing cycle.
+				...(customEndDate ? { currentEnd: new Date(customEndDate).toISOString() } : {}),
+			},
 			{ onSuccess: () => setPlanModalOpen(false) },
 		);
 	};
@@ -248,6 +258,26 @@ export default function OrganizationDetailPage() {
 								</option>
 							))}
 						</Select>
+					</div>
+					<div>
+						<label className="mb-2 block text-sm font-medium text-slate-700">Status</label>
+						<Select value={selectedStatus} onChange={e => setSelectedStatus(e.target.value as typeof selectedStatus)}>
+							<option value="ACTIVE">Active</option>
+							<option value="TRIALING">Trialing</option>
+							<option value="PAST_DUE">Past due</option>
+							<option value="CANCELLED">Cancelled</option>
+							<option value="EXPIRED">Expired</option>
+						</Select>
+					</div>
+					<div>
+						<label className="mb-2 block text-sm font-medium text-slate-700">
+							Custom period end date <span className="font-normal text-slate-400">(optional)</span>
+						</label>
+						<Input type="date" value={customEndDate} onChange={e => setCustomEndDate(e.target.value)} />
+						<p className="mt-1 text-xs text-slate-400">
+							Leave blank to let the plan&apos;s billing cycle decide when this subscription renews. Set this to grant a
+							manual extension or backdate a period end.
+						</p>
 					</div>
 					<Button className="w-full" isLoading={assignSubscription.isPending} onClick={handleAssignPlan}>
 						Save subscription

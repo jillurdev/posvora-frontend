@@ -64,6 +64,13 @@ export interface Sale {
 	currency?: string | null;
 	note?: string | null;
 	createdAt: string;
+	payments?: Array<{
+		id: string;
+		method: SalePaymentMethod;
+		amount: number;
+		transactionRef?: string | null;
+		createdAt: string;
+	}>;
 	items?: Array<{
 		id: string;
 		productId: string;

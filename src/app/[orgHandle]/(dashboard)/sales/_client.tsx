@@ -72,7 +72,10 @@ export default function SalesPage() {
 				<div className="flex items-center gap-1">
 					{s.isHeld ? (
 						<button
-							onClick={() => router.push(`/${orgHandle}/sales/pos?resume=${s.id}`)}
+							onClick={e => {
+								e.stopPropagation();
+								router.push(`/${orgHandle}/sales/pos?resume=${s.id}`);
+							}}
 							className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100"
 							title="Resume held sale"
 						>
@@ -80,7 +83,10 @@ export default function SalesPage() {
 						</button>
 					) : (
 						<button
-							onClick={() => openReceipt.mutate(s.id)}
+							onClick={e => {
+								e.stopPropagation();
+								openReceipt.mutate(s.id);
+							}}
 							className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-500 hover:bg-slate-100"
 							title="Download receipt"
 						>
@@ -114,7 +120,14 @@ export default function SalesPage() {
 				</Select>
 			</div>
 
-			<DataTable columns={columns} data={data?.data ?? []} isLoading={isLoading} rowKey={s => s.id} emptyTitle="No sales yet" />
+			<DataTable
+				columns={columns}
+				data={data?.data ?? []}
+				isLoading={isLoading}
+				rowKey={s => s.id}
+				emptyTitle="No sales yet"
+				onRowClick={s => router.push(`/${orgHandle}/sales/${s.id}`)}
+			/>
 			{data?.meta && <Pagination page={data.meta.page} totalPages={data.meta.totalPages} onPageChange={setPage} />}
 		</div>
 	);

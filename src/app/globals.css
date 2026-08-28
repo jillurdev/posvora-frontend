@@ -2,9 +2,96 @@
 
 :root {
 	--background: #f8fafc;
+
+	/* Marketing site tokens — a POS/till palette, kept scoped to the public pages */
+	--mk-paper: #f2f5ef;
+	--mk-paper-raised: #ffffff;
+	--mk-ink: #12201a;
+	--mk-ink-soft: #55655c;
+	--mk-till: #0e6b4f;
+	--mk-till-deep: #0a4f3a;
+	--mk-till-soft: #e4efe9;
+	--mk-gold: #d9992e;
+	--mk-gold-soft: #f7e9d1;
+	--mk-line: #dde6da;
 }
 
 body {
 	background: var(--background);
 	color: #0f172a;
+}
+
+/* ── Marketing / landing animations ───────────────────────── */
+@keyframes mk-fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes mk-blink {
+	0%,
+	45% {
+		opacity: 1;
+	}
+	50%,
+	95% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
+}
+
+@keyframes mk-marquee {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-50%);
+	}
+}
+
+@keyframes mk-tape-feed {
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: 0 24px;
+	}
+}
+
+.mk-reveal {
+	opacity: 0;
+	transform: translateY(14px);
+	transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.mk-reveal.mk-in {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.mk-marquee-track {
+	animation: mk-marquee 28s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mk-reveal {
+		opacity: 1;
+		transform: none;
+		transition: none;
+	}
+	.mk-marquee-track {
+		animation: none;
+	}
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+	}
 }
