@@ -39,7 +39,10 @@ export const authApi = {
 	enableTwoFactor: (token: string) =>
 		httpClient.post<EnableTwoFactorResult>("/auth/2fa/enable", { token }),
 	disableTwoFactor: (password: string, token: string) =>
-		httpClient.post<{ message: string }>("/auth/2fa/disable", { password, token }),
+		httpClient.post<{ message: string }>("/auth/2fa/disable", {
+			password,
+			token,
+		}),
 	forgotPassword: (payload: ForgotPasswordPayload) =>
 		httpClient.post<{ message: string }>("/auth/forgot-password", payload),
 	resetPassword: (payload: ResetPasswordPayload) =>

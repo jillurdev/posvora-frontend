@@ -40,27 +40,36 @@ export interface Invoice {
 export interface Subscription {
 	id: string;
 	planId: string;
+	// AWAITING_PAYMENT | TRIALING | ACTIVE | PAUSED | PAST_DUE | CANCELLED | EXPIRED
 	status: string;
 	trialEndsAt?: string | null;
 	currentEnd?: string | null;
-	scheduledPlanId?: string | null;
-	scheduledPlan?: Plan | null;
-	scheduledEffectiveAt?: string | null;
-	creditBalance?: number;
+	// Set while this row is PAUSED (banked) — how much purchased time is
+	// frozen on it, in milliseconds. Convert to days for display:
+	// Math.ceil(Number(pausedRemainingMs) / 86_400_000).
+	pausedRemainingMs?: string | number | null;
+	pausedAt?: string | null;
 	plan?: Plan;
 	invoices?: Invoice[];
 	// Set once a Stripe recurring subscription is active for this org — see
-	// CurrencyRateSyncService/subscription.service's invoice.paid webhook
-	// handling on the backend. Non-null means Stripe is auto-charging the
-	// saved card every billing cycle; nextBillingAt is when that next
-	// charge will happen.
+	// subscription.service's invoice.paid webhook handling on the backend.
+	// Non-null means Stripe is auto-charging the saved card every billing
+	// cycle; nextBillingAt is when that next charge will happen.
 	autoRenew?: boolean;
 	gatewaySubscriptionId?: string | null;
 	nextBillingAt?: string | null;
 }
 
 export interface MySubscription {
+	// The plan currently granting access. Kept for backward compatibility —
+	// same value as `active`.
 	subscription: Subscription | null;
+	active: Subscription | null;
+	// Other plans this org has already paid for and can switch into any
+	// time, at no extra cost — see SubscriptionService.switchTo() on the
+	// backend.
+	paused: Subscription[];
+	all?: Subscription[];
 	hasUsedTrial: boolean;
 	// The organization's ISO country code — decides whether pricing here
 	// (and at checkout) is in BDT via SSLCommerz or USD via Stripe.
@@ -69,12 +78,13 @@ export interface MySubscription {
 
 export interface CheckoutResult {
 	requiresPayment: boolean;
-	scheduled: boolean;
+	// True when the payment just confirmed was for a plan other than the
+	// one currently running — it lands PAUSED (banked) instead of ACTIVE,
+	// ready to switch into any time.
+	banked: boolean;
 	gatewayUrl?: string;
-	effectiveAt?: string;
 	durationMonths?: number;
 	discountPercent?: number;
-	creditApplied?: number;
 	amount?: number;
 	subscription?: Subscription;
 }
@@ -83,7 +93,6 @@ export interface DurationQuote {
 	months: number;
 	discountPercent: number;
 	listAmount: number;
-	creditAmount: number;
 	amount: number;
 	monthlyRate: number;
 	currency: string;

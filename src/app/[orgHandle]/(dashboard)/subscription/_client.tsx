@@ -2,46 +2,48 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { AlertTriangle, CreditCard, Check, Clock, Gift } from "lucide-react";
+import { AlertTriangle, CreditCard, Check, Clock, Gift, ArrowLeftRight } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
-import { usePlans, useMySubscription, useCheckout, useCancelSubscription } from "@/features/subscription/hooks/useSubscription";
+import { usePlans, useMySubscription, useCheckout, useCancelSubscription, useSwitchPlan } from "@/features/subscription/hooks/useSubscription";
 import { DurationPickerModal } from "@/features/subscription/components/DurationPickerModal";
 import { ConfirmPlanActionModal } from "@/features/subscription/components/ConfirmPlanActionModal";
-import { getRenewalWarning, isSubscriptionCurrentlyActive, isTrialEligible, planLimitLines } from "@/features/subscription/utils";
-import type { Plan } from "@/features/subscription/types";
+import { getRenewalWarning, isSubscriptionCurrentlyActive, isTrialEligible, pausedDaysRemaining, planLimitLines } from "@/features/subscription/utils";
+import type { Plan, Subscription } from "@/features/subscription/types";
 import type { PaymentGateway } from "@/features/subscription/api";
 import { formatMoney, formatDate } from "@/lib/utils";
 
-type PendingConfirm = { plan: Plan; kind: "trial" | "free-immediate" | "free-scheduled" };
+type PendingConfirm = { plan: Plan; kind: "trial" | "free-immediate" };
 
 export default function SubscriptionPage() {
 	const { data: plans = [], isLoading } = usePlans();
 	const { data: me } = useMySubscription();
-	const subscription = me?.subscription ?? null;
+	const subscription = me?.active ?? me?.subscription ?? null;
+	const bankedPlans = me?.paused ?? [];
 	const hasUsedTrial = me?.hasUsedTrial ?? false;
 	const orgCountry = me?.country ?? "BD";
 	const isIntl = orgCountry !== "BD";
 	const isIndia = orgCountry === "IN";
 	const checkout = useCheckout();
+	const switchPlan = useSwitchPlan();
 	const cancelSubscription = useCancelSubscription();
 	const router = useRouter();
 	const searchParams = useSearchParams();
 	const [pickingPlan, setPickingPlan] = useState<Plan | null>(null);
 	const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
 
-	// SSLCommerz redirects the browser back here with ?payment=success|failed|cancelled
-	// after the customer completes (or abandons) checkout.
+	// SSLCommerz/Stripe/Razorpay redirect the browser back here with
+	// ?payment=success|failed|cancelled after checkout completes or is abandoned.
 	const handledPaymentParam = useRef(false);
 	useEffect(() => {
 		const payment = searchParams.get("payment");
 		if (!payment || handledPaymentParam.current) return;
 		handledPaymentParam.current = true;
 
-		if (payment === "success") toast.success("Payment received — your subscription is now active.");
+		if (payment === "success") toast.success("Payment received.");
 		else if (payment === "failed") toast.error("Payment failed. Please try again.");
 		else if (payment === "cancelled") toast.info("Payment was cancelled.");
 
@@ -51,14 +53,20 @@ export default function SubscriptionPage() {
 	const isTrialing = subscription?.status === "TRIALING";
 	const isOnFreePlan = subscription?.plan?.price === 0;
 	const renewalDate = isTrialing ? subscription?.trialEndsAt : subscription?.currentEnd;
-	const hasSomethingToLose = isSubscriptionCurrentlyActive(subscription); // paid time or an unused trial in progress
+	const hasRunningPaidOrTrial = isSubscriptionCurrentlyActive(subscription); // paid time or an unused trial in progress, on the RUNNING plan
+	// An org can't drop to Free while it's holding ANY paid plan, running
+	// or banked — mirrors the backend's checkout() rule exactly.
+	const holdsAnyPaidPlan = (hasRunningPaidOrTrial && !isOnFreePlan) || bankedPlans.length > 0;
 	const warning = getRenewalWarning(subscription);
 
 	const handlePick = (plan: Plan) => {
-		// Every plan action gets an explicit confirm step — nothing fires on
-		// the first click, even the free/no-payment paths.
-		if (Number(plan.price) === 0) {
-			setPendingConfirm({ plan, kind: hasSomethingToLose ? "free-scheduled" : "free-immediate" });
+		const isFree = Number(plan.price) === 0;
+		if (isFree) {
+			if (holdsAnyPaidPlan) {
+				toast.error("You can't move to the Free plan while you still have an active or banked paid plan. Cancel it first, or let it expire.");
+				return;
+			}
+			setPendingConfirm({ plan, kind: "free-immediate" });
 			return;
 		}
 		if (isTrialEligible(plan, subscription, hasUsedTrial)) {
@@ -78,13 +86,6 @@ export default function SubscriptionPage() {
 				confirmLabel: "Start free trial",
 			};
 		}
-		if (kind === "free-scheduled") {
-			return {
-				title: "Switch to the Free plan?",
-				description: `You've already paid for your current plan, so nothing changes right now — you'll keep full access until ${renewalDate ? formatDate(renewalDate) : "your current period ends"}. After that, your organization moves to the Free plan (limited features) automatically.`,
-				confirmLabel: "Schedule switch to Free",
-			};
-		}
 		return {
 			title: "Switch to the Free plan?",
 			description: "Your organization will move to the Free plan right away — limited branches, staff accounts, storage, and API calls. You can upgrade again anytime.",
@@ -98,7 +99,7 @@ export default function SubscriptionPage() {
 				title="Subscription"
 				description={
 					subscription
-						? `Current plan: ${subscription.plan?.name ?? "—"} · renews ${renewalDate ? formatDate(renewalDate) : "—"}`
+						? `Current plan: ${subscription.plan?.name ?? "—"} · ${subscription.currentEnd ? `renews ${formatDate(renewalDate ?? subscription.currentEnd)}` : "no expiry"}`
 						: "Choose a plan for your organization."
 				}
 			/>
@@ -116,9 +117,11 @@ export default function SubscriptionPage() {
 						<>
 							Your {warning.isTrial ? "free trial" : "plan"} ends in <strong>{warning.daysLeft}</strong> day
 							{warning.daysLeft === 1 ? "" : "s"}. Please renew as soon as possible — after it ends,{" "}
-							{warning.isTrial
-								? "you'll move to the Free plan automatically"
-								: "premium features will stop and you'll be moved to the Free plan (limited features)"}
+							{bankedPlans.length > 0
+								? "you'll automatically switch to your next banked plan"
+								: warning.isTrial
+									? "you'll move to the Free plan automatically"
+									: "premium features will stop and you'll be moved to the Free plan (limited features)"}
 							.
 						</>
 					)}
@@ -140,14 +143,6 @@ export default function SubscriptionPage() {
 				</div>
 			)}
 
-			{Number(subscription?.creditBalance ?? 0) > 0 && (
-				<div className="mb-4 flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-					<Check className="h-4 w-4 shrink-0" />
-					You have <strong>{formatMoney(subscription!.creditBalance!)}</strong> in credit banked from a previous plan change — it'll be
-					applied automatically to your next upgrade.
-				</div>
-			)}
-
 			{subscription?.autoRenew && subscription?.gatewaySubscriptionId && (
 				<div className="mb-4 flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
 					<div className="flex items-center gap-2">
@@ -160,8 +155,8 @@ export default function SubscriptionPage() {
 						size="sm"
 						isLoading={cancelSubscription.isPending}
 						onClick={() => {
-							if (window.confirm("Stop auto-renewing? Your subscription stays active until the current period ends, then moves to the Free plan.")) {
-								cancelSubscription.mutate();
+							if (window.confirm("Stop auto-renewing? Your subscription stays active until the current period ends.")) {
+								cancelSubscription.mutate(undefined);
 							}
 						}}
 					>
@@ -170,11 +165,35 @@ export default function SubscriptionPage() {
 				</div>
 			)}
 
-			{subscription?.scheduledPlanId && subscription.scheduledPlan && (
-				<div className="mb-4 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-					<Clock className="h-4 w-4 shrink-0" />
-					Switching to <strong>{subscription.scheduledPlan.name}</strong> on{" "}
-					{subscription.scheduledEffectiveAt ? formatDate(subscription.scheduledEffectiveAt) : "your next billing date"}. No payment needed until then.
+			{/* Banked plans — already paid for, not currently in use. Switching is
+			    instant and free: the running plan's remaining time freezes, and
+			    the banked one resumes exactly where it left off. */}
+			{bankedPlans.length > 0 && (
+				<div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+					<h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-indigo-900">
+						<ArrowLeftRight className="h-4 w-4" /> Banked plans — already paid for, ready to switch into
+					</h3>
+					<div className="space-y-2">
+						{bankedPlans.map((banked: Subscription) => {
+							const days = pausedDaysRemaining(banked);
+							return (
+								<div key={banked.id} className="flex items-center justify-between rounded-lg bg-white px-3 py-2">
+									<div>
+										<p className="text-sm font-medium text-slate-900">{banked.plan?.name ?? "—"}</p>
+										<p className="text-xs text-slate-500">
+											{days !== null ? `${days} day${days === 1 ? "" : "s"} of paid time banked` : "Paid time banked"}
+										</p>
+									</div>
+									<Button size="sm" isLoading={switchPlan.isPending && switchPlan.variables === banked.id} onClick={() => switchPlan.mutate(banked.id)}>
+										Switch to this plan
+									</Button>
+								</div>
+							);
+						})}
+					</div>
+					<p className="mt-2 text-xs text-indigo-700">
+						No money changes hands when you switch — your current plan&apos;s unused time freezes here in exchange.
+					</p>
 				</div>
 			)}
 
@@ -183,10 +202,8 @@ export default function SubscriptionPage() {
 			) : (
 				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
 					{plans.map(plan => {
-						// The plan the org is actually on right now — independent of
-						// any downgrade scheduled for later, which is a separate thing.
-						const active = subscription?.planId === plan.id;
-						const isScheduled = subscription?.scheduledPlanId === plan.id;
+						const active = subscription?.planId === plan.id && subscription?.status !== "PAUSED";
+						const banked = bankedPlans.find((b: Subscription) => b.planId === plan.id);
 						const isUpgrade = subscription?.plan && plan.price > subscription.plan.price;
 						const isFree = Number(plan.price) === 0;
 						const trialEligible = isTrialEligible(plan, subscription, hasUsedTrial);
@@ -194,19 +211,18 @@ export default function SubscriptionPage() {
 
 						// Everyone can always pay in BDT via SSLCommerz, regardless of
 						// their own country — Stripe/USD is simply an additional option
-						// when this plan has international pricing set. So the teaser
-						// price here shows USD only when available; otherwise it falls
-						// back to BDT, which is never unavailable. The actual choice of
-						// which to pay with happens in the duration/payment picker.
+						// when this plan has international pricing set.
 						const showUsd = isIntl && !isFree && plan.priceUsd != null;
 						const displayPrice = showUsd ? plan.priceUsd : plan.price;
 
 						let label = "Subscribe";
 						if (active) label = "Current plan";
-						else if (isScheduled) label = "Scheduled";
-						else if (isFree) label = hasSomethingToLose ? "Downgrade to Free (at period end)" : "Switch to Free";
+						else if (banked) label = "Switch to this plan";
+						else if (isFree) label = holdsAnyPaidPlan ? "Unavailable while on a paid plan" : "Switch to Free";
 						else if (trialEligible) label = `Start ${plan.trialDays}-day free trial`;
-						else if (subscription?.plan) label = isUpgrade ? "Upgrade" : "Switch to this plan";
+						else if (subscription?.plan) label = isUpgrade ? "Upgrade" : "Get this plan";
+
+						const disabled = active || (isFree && holdsAnyPaidPlan);
 
 						return (
 							<div key={plan.id} className="flex flex-col rounded-xl border border-slate-200 bg-white p-6">
@@ -214,11 +230,16 @@ export default function SubscriptionPage() {
 									<h3 className="text-lg font-semibold text-slate-900">{plan.name}</h3>
 									<div className="flex gap-1.5">
 										{active && <Badge tone={activeOnTrial ? "info" : "success"}>{activeOnTrial ? "On trial" : "Active"}</Badge>}
-										{isScheduled && <Badge tone="warning">Scheduled</Badge>}
+										{banked && <Badge tone="info">Banked</Badge>}
 									</div>
 								</div>
-								{active && subscription?.scheduledPlan && (
-									<p className="mt-0.5 text-xs text-amber-600">Switching to {subscription.scheduledPlan.name} soon</p>
+								{banked && (
+									<p className="mt-0.5 text-xs text-indigo-600">
+										{(() => {
+											const d = pausedDaysRemaining(banked);
+											return d !== null ? `${d} day${d === 1 ? "" : "s"} banked — ready to switch into` : "Ready to switch into";
+										})()}
+									</p>
 								)}
 								<p className="mt-2 text-2xl font-semibold text-slate-900">
 									{formatMoney(displayPrice ?? 0, showUsd ? "USD" : "BDT")}
@@ -254,9 +275,12 @@ export default function SubscriptionPage() {
 								<Button
 									className="mt-6 w-full"
 									variant={active ? "outline" : "primary"}
-									disabled={active || isScheduled}
-									isLoading={checkout.isPending && checkout.variables?.planId === plan.id}
-									onClick={() => handlePick(plan)}
+									disabled={disabled}
+									isLoading={
+										(checkout.isPending && checkout.variables?.planId === plan.id) ||
+										(!!banked && switchPlan.isPending && switchPlan.variables === banked.id)
+									}
+									onClick={() => (banked ? switchPlan.mutate(banked.id) : handlePick(plan))}
 								>
 									{label}
 								</Button>
@@ -310,9 +334,10 @@ export default function SubscriptionPage() {
 				&quot;Staff accounts&quot; are the people who log in to run your business — cashiers, managers, etc. — not your
 				shop&apos;s customers, who are unlimited on every plan. Plans with a free trial never ask for payment up front.
 				For paid checkouts you choose how long to prepay for (1 month up to multiple years — longer terms get a
-				discount), and any unused time on your current plan is credited toward an upgrade. Downgrades — including
-				switching to Free — take effect at the end of your current billing period, so you never lose time you&apos;ve
-				already paid for.
+				discount). You can hold more than one paid plan at once — buying a new plan while another is already
+				running banks it (no charge is ever converted to a downgrade credit or lost); switch between held plans
+				any time above, free of charge. You can&apos;t move to the Free plan while any paid plan is still active or
+				banked.
 			</p>
 
 			<DurationPickerModal

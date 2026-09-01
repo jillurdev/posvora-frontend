@@ -218,14 +218,6 @@ export function DurationPickerModal({ plan, onClose, onConfirm, isSubmitting, de
 								<p className="text-sm text-amber-600">
 									This plan doesn&apos;t have international pricing set up yet — please contact support.
 								</p>
-							) : quote.creditAmount > 0 ? (
-								<>
-									<p className="mt-1 text-sm text-slate-400 line-through">{formatMoney(quote.listAmount, quote.currency)}</p>
-									<p className="text-2xl font-semibold text-slate-900">{formatMoney(quote.amount, quote.currency)}</p>
-									<p className="text-xs text-emerald-600">
-										Includes {formatMoney(quote.creditAmount, quote.currency)} credit for unused time on your current plan
-									</p>
-								</>
 							) : (
 								<>
 									<p className="mt-1 text-2xl font-semibold text-slate-900">{formatMoney(quote.amount, quote.currency)}</p>
@@ -254,11 +246,7 @@ export function DurationPickerModal({ plan, onClose, onConfirm, isSubmitting, de
 					isLoading={isSubmitting}
 					onClick={() => onConfirm(autoRenew ? undefined : months, gateway, autoRenew)}
 				>
-					{autoRenew
-						? "Continue to payment — auto-renew"
-						: quote && quote.amount === 0 && quote.listAmount > 0
-							? "Activate — fully covered by credit"
-							: "Continue to payment"}
+					{autoRenew ? "Continue to payment — auto-renew" : "Continue to payment"}
 				</Button>
 			</div>
 		</Modal>

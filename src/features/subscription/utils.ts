@@ -54,13 +54,19 @@ export function getRenewalWarning(subscription?: Subscription | null): RenewalWa
 	return { level: daysLeft <= 3 ? "urgent" : "notice", daysLeft, isTrial };
 }
 
-/** Mirrors the backend's `isSubscriptionCurrentlyActive` — true while the current trial/paid period hasn't lapsed yet. */
+/** Mirrors the backend's running-status check — true while the current trial/paid period hasn't lapsed yet. */
 export function isSubscriptionCurrentlyActive(subscription?: Subscription | null): boolean {
 	if (!subscription) return false;
 	if (subscription.status !== "ACTIVE" && subscription.status !== "TRIALING") return false;
 	const boundary = subscription.status === "TRIALING" ? subscription.trialEndsAt : subscription.currentEnd;
 	if (!boundary) return true;
 	return new Date(boundary).getTime() > Date.now();
+}
+
+/** Days of banked (frozen) time left on a PAUSED subscription — see Subscription.pausedRemainingMs. */
+export function pausedDaysRemaining(subscription?: Subscription | null): number | null {
+	if (!subscription?.pausedRemainingMs) return null;
+	return Math.max(0, Math.ceil(Number(subscription.pausedRemainingMs) / (1000 * 60 * 60 * 24)));
 }
 
 /** True when picking this plan would activate a genuinely free trial — no duration/payment step needed. */

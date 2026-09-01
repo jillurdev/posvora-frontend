@@ -23,9 +23,9 @@ export function useMySubscription() {
 
 /**
  * Kicks off a plan change. The caller must branch on the result:
- *  - `requiresPayment` -> redirect the browser to `gatewayUrl` (SSLCommerz or Stripe, whichever the customer picked).
- *  - `scheduled` -> nothing to pay now, the plan switches at `effectiveAt`.
- *  - neither -> a free trial was activated immediately.
+ *  - `requiresPayment` -> redirect the browser to `gatewayUrl` (SSLCommerz, Stripe, or Razorpay, whichever the customer picked).
+ *  - `banked` (after payment confirms) -> the plan was paid for but another plan is already running, so it landed PAUSED — switch into it any time via useSwitchPlan.
+ *  - neither -> a free trial (or the Free plan) was activated immediately.
  */
 export function useCheckout() {
 	const qc = useQueryClient();
@@ -37,13 +37,20 @@ export function useCheckout() {
 				window.location.href = result.gatewayUrl;
 				return;
 			}
-			if (result.scheduled) {
-				toast.success("Plan change scheduled for the end of your current billing period.");
-			} else if (result.creditApplied) {
-				toast.success("Your remaining plan balance covered this upgrade — no payment needed!");
-			} else {
-				toast.success("Your plan is now active.");
-			}
+			toast.success("Your plan is now active.");
+			qc.invalidateQueries({ queryKey: ["subscription"] });
+		},
+		onError: (err: Error) => toast.error(err.message),
+	});
+}
+
+/** Switches the org's running plan to an already-held, banked (PAUSED) plan — no payment involved. */
+export function useSwitchPlan() {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (subscriptionId: string) => subscriptionApi.switchTo(subscriptionId),
+		onSuccess: () => {
+			toast.success("Switched plans.");
 			qc.invalidateQueries({ queryKey: ["subscription"] });
 		},
 		onError: (err: Error) => toast.error(err.message),
@@ -53,7 +60,7 @@ export function useCheckout() {
 export function useCancelSubscription() {
 	const qc = useQueryClient();
 	return useMutation({
-		mutationFn: () => subscriptionApi.cancel(),
+		mutationFn: (subscriptionId?: string) => subscriptionApi.cancel(subscriptionId),
 		onSuccess: () => {
 			toast.success("Subscription cancelled.");
 			qc.invalidateQueries({ queryKey: ["subscription"] });

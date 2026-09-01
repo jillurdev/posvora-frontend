@@ -5,7 +5,7 @@ export type PaymentGateway = "SSLCOMMERZ" | "STRIPE" | "RAZORPAY";
 
 export const subscriptionApi = {
 	plans: () => httpClient.get<Plan[]>("/subscription/plans"),
-	me: () => httpClient.get<MySubscription>("/subscription/me"),
+	me: () => httpClient.get<MySubscription>("/subscription/mine/all"),
 	// Live price preview for a chosen duration — no side effects, safe to
 	// call repeatedly while the owner is still picking a duration.
 	// `gateway` is the customer's own payment-method choice (SSLCommerz/BDT
@@ -25,5 +25,11 @@ export const subscriptionApi = {
 	// backend rejects combining it with durationMonths.
 	checkout: (planId: string, durationMonths?: number, gateway?: PaymentGateway, autoRenew?: boolean) =>
 		httpClient.post<CheckoutResult>("/subscription/checkout", { planId, durationMonths, gateway, autoRenew }),
-	cancel: () => httpClient.post("/subscription/cancel"),
+	// Switches the org's running plan to one it already holds banked
+	// (PAUSED) — no payment, no time lost either direction.
+	switchTo: (subscriptionId: string) =>
+		httpClient.post<{ id: string; status: string }>("/subscription/switch", { subscriptionId }),
+	// Omit subscriptionId to cancel whatever plan is currently running;
+	// pass it to cancel a specific banked plan instead.
+	cancel: (subscriptionId?: string) => httpClient.post("/subscription/cancel", subscriptionId ? { subscriptionId } : undefined),
 };
