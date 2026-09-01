@@ -248,13 +248,13 @@ export default function OrganizationDetailPage() {
 					{/* Other plans this org has paid for and can switch into any time
 					    (see subscription.service.ts switchTo()) — not just the one
 					    currently running. */}
-					{org.subscriptions?.some((s: { status: string }) => s.status === "PAUSED") && (
+					{org.subscriptions?.some(s => s.status === "PAUSED") && (
 						<div className="mt-4 border-t border-slate-100 pt-4">
 							<dt className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-400">Banked plans</dt>
 							<ul className="space-y-1.5">
 								{org.subscriptions
-									.filter((s: { status: string }) => s.status === "PAUSED")
-									.map((s: { id: string; plan: { name: string }; pausedRemainingMs?: string | number | null }) => (
+									.filter(s => s.status === "PAUSED")
+									.map(s => (
 										<li key={s.id} className="flex items-center justify-between text-sm">
 											<span className="text-slate-700">{s.plan.name}</span>
 											<span className="text-xs text-slate-400">

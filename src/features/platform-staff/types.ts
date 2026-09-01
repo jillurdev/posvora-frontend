@@ -31,6 +31,10 @@ export interface AdminSubscriptionSummary {
 	currentEnd?: string | null;
 	autoRenew: boolean;
 	plan: AdminPlanSummary;
+	// Set while status is PAUSED — how much purchased time is frozen on
+	// this row, in milliseconds. See subscription.service.ts switchTo().
+	pausedRemainingMs?: string | number | null;
+	pausedAt?: string | null;
 }
 
 export interface AdminBranchSummary {
@@ -67,6 +71,9 @@ export interface AdminOrganization {
 	owner?: AdminOrgOwner;
 	shops?: AdminShopSummary[];
 	subscription?: AdminSubscriptionSummary | null;
+	// Every plan-slot the org currently holds (running + banked/PAUSED) —
+	// `subscription` above is just the running one, for convenience.
+	subscriptions?: AdminSubscriptionSummary[];
 }
 
 export interface AdminOrganizationDetail extends AdminOrganization {
