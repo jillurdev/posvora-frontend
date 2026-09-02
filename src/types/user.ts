@@ -8,7 +8,7 @@ export interface AuthUser {
 	avatarUrl?: string | null;
 	status: "ACTIVE" | "INACTIVE" | "SUSPENDED" | "PENDING";
 	organizationId: string | null;
-	organization?: { id: string; name: string; handle: string | null } | null;
+	organization?: { id: string; name: string; handle: string | null; logoUrl?: string | null } | null;
 	roles: SystemRole[];
 	mustChangePassword?: boolean;
 	twoFactorEnabled?: boolean;
