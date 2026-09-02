@@ -74,6 +74,14 @@ export default function SettingsPage() {
 							onSubmit={profileForm.handleSubmit(values => updateProfile.mutate(values))}
 							className="space-y-4"
 						>
+							<TextField
+								id="profile-email"
+								label="Email"
+								type="email"
+								value={user?.email ?? ""}
+								disabled
+								hint="This is the email you signed up with — it can't be changed here. Contact support if it needs to change."
+							/>
 							<TextField id="profile-name" label="Name" {...profileForm.register("name")} />
 							<TextField id="profile-phone" label="Phone" {...profileForm.register("phone")} />
 							<Button type="submit" isLoading={updateProfile.isPending}>Save profile</Button>
