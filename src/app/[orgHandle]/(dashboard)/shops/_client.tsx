@@ -6,11 +6,13 @@ import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { PageHeader } from "@/components/common/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
+import { HandleAvailabilityField } from "@/components/common/HandleAvailabilityField";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { TextField, SelectField } from "@/components/ui/Field";
 import { useConfirm } from "@/context/ConfirmDialogContext";
 import { useShops, useCreateShop, useUpdateShop, useDeleteShop } from "@/features/shop/hooks/useShops";
+import { shopApi } from "@/features/shop/api";
 import type { Shop, ShopPayload } from "@/features/shop/types";
 import { CURRENCIES } from "@/lib/currencies";
 import { COUNTRIES } from "@/lib/countries";
@@ -24,17 +26,25 @@ export default function ShopsPage() {
 
 	const [modalOpen, setModalOpen] = useState(false);
 	const [editing, setEditing] = useState<Shop | null>(null);
+	// Gates the Save button on the "Public handle" field while editing —
+	// only relevant once the field has an unchecked/changed value (see
+	// HandleAvailabilityField, which reports true immediately when the
+	// value equals the shop's current saved slug).
+	const [slugAvailable, setSlugAvailable] = useState(true);
 
-	const { register, handleSubmit, reset, setValue } = useForm<ShopPayload>();
+	const { register, handleSubmit, reset, setValue, watch } = useForm<ShopPayload>();
+	const slugValue = watch("slug") ?? "";
 
 	const openCreate = () => {
 		setEditing(null);
+		setSlugAvailable(true);
 		reset({ name: "", address: "", bin: "", vatNumber: "", country: "BD", currency: "BDT", timezone: "" });
 		setModalOpen(true);
 	};
 
 	const openEdit = (shop: Shop) => {
 		setEditing(shop);
+		setSlugAvailable(true);
 		reset({
 			name: shop.name,
 			address: shop.address ?? "",
@@ -131,12 +141,16 @@ export default function ShopsPage() {
 				<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 					<TextField id="shop-name" label="Name" required {...register("name", { required: true })} />
 					{editing && (
-						<TextField
+						<HandleAvailabilityField
 							id="shop-slug"
 							label="Public handle"
-							hint="Letters, numbers and hyphens only — this is the shop's public link."
+							value={slugValue}
+							onChange={v => setValue("slug", v)}
+							currentValue={editing.slug ?? ""}
 							placeholder="my-shop"
-							{...register("slug")}
+							hint="Letters, numbers and hyphens only — this is the shop's public link (posvora.com/shop/<handle>)."
+							checkAvailability={v => shopApi.checkSlugAvailability(v, editing.id)}
+							onAvailabilityChange={setSlugAvailable}
 						/>
 					)}
 					<TextField id="shop-address" label="Address" {...register("address")} />
@@ -168,7 +182,9 @@ export default function ShopsPage() {
 					</p>
 					<div className="flex justify-end gap-2 pt-2">
 						<Button type="button" variant="outline" onClick={() => { setModalOpen(false); setEditing(null); }}>Cancel</Button>
-						<Button type="submit" isLoading={createShop.isPending || updateShop.isPending}>Save</Button>
+						<Button type="submit" isLoading={createShop.isPending || updateShop.isPending} disabled={!!editing && !slugAvailable}>
+							Save
+						</Button>
 					</div>
 				</form>
 			</Modal>

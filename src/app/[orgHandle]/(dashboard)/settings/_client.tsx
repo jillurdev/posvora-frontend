@@ -9,9 +9,11 @@ import { SelectField, TextField } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { FileUploadPreview } from "@/components/common/FileUploadPreview";
+import { HandleAvailabilityField } from "@/components/common/HandleAvailabilityField";
 import { useAuth } from "@/context/AuthContext";
 import { useUpdateProfile, useUploadAvatar } from "@/features/user/hooks/useProfile";
 import { useOrganization, useUpdateOrganization, useUploadOrganizationLogo } from "@/features/organization/hooks/useOrganization";
+import { organizationApi } from "@/features/organization/api";
 import { useShops, useUploadShopLogo } from "@/features/shop/hooks/useShops";
 import { useChangePassword } from "@/features/auth/hooks/useChangePassword";
 import { changePasswordSchema, ChangePasswordFormValues } from "@/features/auth/schema";
@@ -41,6 +43,10 @@ export default function SettingsPage() {
 	const profileForm = useForm({ defaultValues: { name: user?.name ?? "", phone: user?.phone ?? "" } });
 	const orgForm = useForm<UpdateOrganizationPayload>({ defaultValues: { name: "", handle: "", email: "", phone: "", address: "" } });
 	const passwordForm = useForm<ChangePasswordFormValues>({ resolver: zodResolver(changePasswordSchema) });
+	// Gates "Save organization" while the handle field has an
+	// unchecked/changed value — see HandleAvailabilityField.
+	const [handleAvailable, setHandleAvailable] = useState(true);
+	const handleValue = orgForm.watch("handle") ?? "";
 
 	useEffect(() => {
 		if (organization)
@@ -111,18 +117,23 @@ export default function SettingsPage() {
 								className="space-y-4"
 							>
 								<TextField id="org-name" label="Business name" {...orgForm.register("name")} />
-								<TextField
+								<HandleAvailabilityField
 									id="org-handle"
 									label="Handle (public URL)"
-									hint="Letters, numbers and hyphens only. This becomes your public link, e.g. posvora.com/shop/your-handle."
+									value={handleValue}
+									onChange={v => orgForm.setValue("handle", v)}
+									currentValue={organization?.handle ?? ""}
 									placeholder="your-business"
-									{...orgForm.register("handle")}
+									hint="Letters, numbers and hyphens only. This becomes your public link, e.g. posvora.com/shop/your-handle."
+									disabled={!isOwner}
+									checkAvailability={v => organizationApi.checkHandleAvailability(v)}
+									onAvailabilityChange={setHandleAvailable}
 								/>
 								<TextField id="org-email" label="Email" type="email" {...orgForm.register("email")} />
 								<TextField id="org-phone" label="Phone" {...orgForm.register("phone")} />
 								<TextField id="org-address" label="Address" {...orgForm.register("address")} />
 								{isOwner && (
-									<Button type="submit" isLoading={updateOrganization.isPending}>Save organization</Button>
+									<Button type="submit" isLoading={updateOrganization.isPending} disabled={!handleAvailable}>Save organization</Button>
 								)}
 							</form>
 						</fieldset>

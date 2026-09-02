@@ -18,6 +18,10 @@ export const shopApi = {
 	update: (id: string, payload: Partial<ShopPayload>) => httpClient.patch<Shop>(`/shops/${id}`, payload),
 	remove: (id: string) => httpClient.delete(`/shops/${id}`),
 	getPublic: (slug: string) => httpClient.get<PublicShop>(`/shops/public/${slug}`),
+	checkSlugAvailability: (slug: string, shopId?: string) =>
+		httpClient.get<{ available: boolean; slug: string; reason?: string }>(
+			`/shops/slug-availability?slug=${encodeURIComponent(slug)}${shopId ? `&shopId=${shopId}` : ""}`,
+		),
 	uploadLogo: (id: string, file: File) => {
 		const formData = new FormData();
 		formData.append("file", file);
