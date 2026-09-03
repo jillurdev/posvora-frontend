@@ -10,6 +10,10 @@ export const adminAuthApi = {
 	login: (payload: AdminLoginPayload) => httpClient.post<AdminLoginResult>("/auth/admin/login", payload),
 	logout: () => httpClient.post("/auth/admin/logout"),
 	me: () => httpClient.get<SuperAdminProfile>("/admin/me"),
+	updateProfile: (payload: { name?: string; phone?: string }) =>
+		httpClient.patch<SuperAdminProfile>("/admin/me", payload),
+	changePassword: (payload: { currentPassword: string; newPassword: string }) =>
+		httpClient.post<{ message: string }>("/admin/change-password", payload),
 	forgotPassword: (payload: AdminForgotPasswordPayload) =>
 		httpClient.post<{ message: string }>("/auth/admin/forgot-password", payload),
 	resetPassword: (payload: AdminResetPasswordPayload) =>

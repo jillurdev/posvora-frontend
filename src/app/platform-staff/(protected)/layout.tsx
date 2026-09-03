@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { ShieldCheck, LayoutDashboard, LifeBuoy, LogOut, Building2, CreditCard, Users, BadgeCheck, Wallet, MessageSquare } from "lucide-react";
+import { ShieldCheck, LayoutDashboard, LifeBuoy, LogOut, Building2, CreditCard, Users, BadgeCheck, Wallet, MessageSquare, Settings } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
 import { Badge } from "@/components/ui/Badge";
 import { useAdminAuth } from "@/context/AdminAuthContext";
@@ -20,6 +20,8 @@ const NAV: { label: string; href: string; icon: typeof LayoutDashboard; exact?: 
 	{ label: "Messages", href: "/platform-staff/messages", icon: MessageSquare, roles: ["OWNER", "ADMIN"] },
 	{ label: "Platform Staff", href: "/platform-staff/staff", icon: Users, roles: ["OWNER"] },
 	{ label: "Support Tickets", href: "/platform-staff/support", icon: LifeBuoy },
+	// No `roles` restriction — every admin (including SUPPORT) manages their own account.
+	{ label: "Settings", href: "/platform-staff/settings", icon: Settings },
 ];
 
 export default function SuperAdminProtectedLayout({ children }: { children: React.ReactNode }) {
