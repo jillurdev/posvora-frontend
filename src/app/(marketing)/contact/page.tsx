@@ -6,6 +6,22 @@ import { TextField, TextareaField } from "@/components/ui/Field";
 import { toast } from "sonner";
 import { supportApi } from "@/features/support/api";
 import { Reveal } from "@/components/marketing/Reveal";
+import { FaqAccordion, type FaqItem } from "@/components/marketing/FaqAccordion";
+
+const CONTACT_FAQS: FaqItem[] = [
+	{
+		question: "How fast will I hear back?",
+		answer: "We reply to every message within one business day. You'll also get a tracking link so you can follow the conversation without waiting on email.",
+	},
+	{
+		question: "I have a question about pricing, not support",
+		answer: "That's fine — send it here too. If you just want to compare plans first, the Pricing page lists every plan's price and features publicly, no sales call needed.",
+	},
+	{
+		question: "I'm an existing customer with an issue",
+		answer: "You'll get a faster response by logging in and opening a ticket from Support inside your dashboard — it's tied to your account, so our team already has your organization's context.",
+	},
+];
 
 export default function ContactPage() {
 	const [submitting, setSubmitting] = useState(false);
@@ -125,6 +141,15 @@ export default function ContactPage() {
 					)}
 				</Reveal>
 			</div>
+
+			<Reveal className="mt-20 max-w-2xl" delayMs={100}>
+				<h2 className="font-[var(--font-mk-display)] text-xl font-semibold tracking-tight text-[var(--mk-ink)]">
+					Before you write in
+				</h2>
+				<div className="mt-6">
+					<FaqAccordion items={CONTACT_FAQS} />
+				</div>
+			</Reveal>
 		</div>
 	);
 }

@@ -9,9 +9,14 @@ import {
 	ShieldCheck,
 	BarChart3,
 	Building2,
+	UserPlus,
+	Settings2,
+	Rocket,
 } from "lucide-react";
 import { Reveal } from "@/components/marketing/Reveal";
 import { ReceiptTicket } from "@/components/marketing/ReceiptTicket";
+import { ModuleShowcase } from "@/components/marketing/ModuleShowcase";
+import { FaqAccordion, type FaqItem } from "@/components/marketing/FaqAccordion";
 
 const FEATURES = [
 	{
@@ -63,6 +68,60 @@ const AUDIENCE = [
 	"Wholesale & distribution",
 	"Electronics & mobile shops",
 	"Service businesses",
+];
+
+const HOW_IT_WORKS = [
+	{
+		icon: UserPlus,
+		step: "01",
+		title: "Create your organization",
+		description: "Sign up, name your business, and pick a plan — including a free trial where available. No card required to start.",
+	},
+	{
+		icon: Settings2,
+		step: "02",
+		title: "Set up your shop",
+		description: "Add your products, branches and team in minutes. Import what you already have, or start from scratch.",
+	},
+	{
+		icon: Rocket,
+		step: "03",
+		title: "Start selling",
+		description: "Ring up sales at the counter while inventory, accounting and reports update themselves in the background.",
+	},
+];
+
+const FAQS: FaqItem[] = [
+	{
+		question: "Exactly what do I get — is this just a POS, or more?",
+		answer:
+			"More than a POS. Posvora covers point of sale, inventory across branches, purchasing and suppliers, real double-entry accounting, customer/supplier ledgers, multi-currency pricing, roles & permissions, and a full audit trail — all connected, so a single sale updates everything else automatically. See the full breakdown above, module by module.",
+	},
+	{
+		question: "Can I run more than one shop or branch?",
+		answer:
+			"Yes. One organization can hold multiple shops, and each shop can have its own branches and warehouses — each with its own stock, team and public storefront link. Reporting rolls up across all of them.",
+	},
+	{
+		question: "What happens if I switch plans later?",
+		answer:
+			"You can hold more than one paid plan at once. Buying a new plan while another is still running banks it — nothing you've paid for is ever converted to a credit or lost — and you can switch between held plans instantly, free of charge, from Subscription settings.",
+	},
+	{
+		question: "Do you support multiple currencies?",
+		answer:
+			"Yes — products can be priced in multiple currencies, exchange rates sync automatically every day, and your accounting stays accurate across all of them. Useful if you sell to customers paying in different currencies or run branches in different markets.",
+	},
+	{
+		question: "Is my business data safe?",
+		answer:
+			"Every staff account only gets the access its role needs, every state-changing action requires explicit confirmation, and every change is recorded in a full audit trail — so you always know what changed, who changed it, and when.",
+	},
+	{
+		question: "Can I cancel anytime?",
+		answer:
+			"Yes, anytime from Subscription settings. If you have no other plan held, your organization automatically falls back to the Free plan (limited features) rather than losing access outright.",
+	},
 ];
 
 export default function HomePage() {
@@ -142,6 +201,30 @@ export default function HomePage() {
 				</div>
 			</section>
 
+			{/* How it works */}
+			<section className="mx-auto max-w-6xl px-4 py-20 lg:px-8">
+				<Reveal className="mx-auto max-w-2xl text-center">
+					<h2 className="font-[var(--font-mk-display)] text-3xl font-semibold tracking-tight text-[var(--mk-ink)]">
+						From signup to your first sale, in minutes
+					</h2>
+					<p className="mt-3 text-[var(--mk-ink-soft)]">No sales calls, no lengthy onboarding — start using it today.</p>
+				</Reveal>
+				<div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
+					{HOW_IT_WORKS.map((step, i) => (
+						<Reveal key={step.title} delayMs={i * 100}>
+							<div className="relative h-full rounded-xl border border-[var(--mk-line)] bg-[var(--mk-paper-raised)] p-6">
+								<span className="font-[var(--font-mk-mono)] text-xs text-[var(--mk-gold)]">{step.step}</span>
+								<div className="mt-3 flex h-10 w-10 items-center justify-center rounded-md bg-[var(--mk-till-soft)] text-[var(--mk-till-deep)]">
+									<step.icon className="h-5 w-5" />
+								</div>
+								<h3 className="mt-4 text-base font-semibold text-[var(--mk-ink)]">{step.title}</h3>
+								<p className="mt-2 text-sm text-[var(--mk-ink-soft)]">{step.description}</p>
+							</div>
+						</Reveal>
+					))}
+				</div>
+			</section>
+
 			{/* Features */}
 			<section id="features" className="mx-auto max-w-6xl px-4 py-20 lg:px-8">
 				<Reveal className="mx-auto max-w-2xl text-center">
@@ -166,6 +249,33 @@ export default function HomePage() {
 						</Reveal>
 					))}
 				</div>
+			</section>
+
+			{/* Module deep-dive — exactly what's included, module by module */}
+			<section className="mx-auto max-w-6xl px-4 pb-20 lg:px-8">
+				<Reveal className="mx-auto max-w-2xl text-center">
+					<h2 className="font-[var(--font-mk-display)] text-3xl font-semibold tracking-tight text-[var(--mk-ink)]">
+						See exactly what you&apos;re getting
+					</h2>
+					<p className="mt-3 text-[var(--mk-ink-soft)]">
+						Pick a module below for the full, specific list of what it does — not just a headline.
+					</p>
+				</Reveal>
+				<Reveal className="mt-12" delayMs={80}>
+					<ModuleShowcase />
+				</Reveal>
+			</section>
+
+			{/* FAQ */}
+			<section className="mx-auto max-w-3xl px-4 pb-20 lg:px-8">
+				<Reveal className="mx-auto max-w-2xl text-center">
+					<h2 className="font-[var(--font-mk-display)] text-3xl font-semibold tracking-tight text-[var(--mk-ink)]">
+						Common questions
+					</h2>
+				</Reveal>
+				<Reveal className="mt-10" delayMs={80}>
+					<FaqAccordion items={FAQS} />
+				</Reveal>
 			</section>
 
 			{/* CTA */}
