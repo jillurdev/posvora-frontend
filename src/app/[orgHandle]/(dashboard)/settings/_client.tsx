@@ -119,12 +119,12 @@ export default function SettingsPage() {
 								<TextField id="org-name" label="Business name" {...orgForm.register("name")} />
 								<HandleAvailabilityField
 									id="org-handle"
-									label="Handle (public URL)"
+									label="Handle (dashboard URL)"
 									value={handleValue}
 									onChange={v => orgForm.setValue("handle", v)}
 									currentValue={organization?.handle ?? ""}
 									placeholder="your-business"
-									hint="Letters, numbers and hyphens only. This becomes your public link, e.g. posvora.com/shop/your-handle."
+									hint="Letters, numbers and hyphens only. This is your organization's dashboard URL (login required) — e.g. posvora.com/your-handle/dashboard. It's not a public storefront; for that, set each shop's own handle below."
 									disabled={!isOwner}
 									checkAvailability={v => organizationApi.checkHandleAvailability(v)}
 									onAvailabilityChange={setHandleAvailable}
