@@ -1,6 +1,4 @@
-import type { Metadata } from "next";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import {
 	ArrowRight,
 	Package,
@@ -17,22 +15,8 @@ import {
 } from "lucide-react";
 import { Reveal } from "@/components/marketing/Reveal";
 import { ReceiptTicket } from "@/components/marketing/ReceiptTicket";
-import type { FaqItem } from "@/components/marketing/FaqAccordion";
-
-// Both are interactive-only (click-to-expand/switch) and sit well below
-// the fold — code-splitting them out of the main page bundle means the
-// hero/features content above the fold has less JS to parse and hydrate
-// before it's interactive. Still server-rendered (ssr defaults to true),
-// so the content stays crawlable and there's no layout-shift-causing
-// client-only mount.
-const ModuleShowcase = dynamic(() => import("@/components/marketing/ModuleShowcase").then(m => m.ModuleShowcase));
-const FaqAccordion = dynamic(() => import("@/components/marketing/FaqAccordion").then(m => m.FaqAccordion));
-
-export const metadata: Metadata = {
-	title: "Posvora — POS, Inventory & Accounting for Growing Businesses",
-	description:
-		"Point of sale, multi-branch inventory, purchasing, real double-entry accounting and reporting — all in one platform. Free trial, no credit card required.",
-};
+import { ModuleShowcase } from "@/components/marketing/ModuleShowcase";
+import { FaqAccordion, type FaqItem } from "@/components/marketing/FaqAccordion";
 
 const FEATURES = [
 	{
@@ -317,7 +301,7 @@ export default function HomePage() {
 							</div>
 							<Link
 								href="/register"
-								className="group inline-flex h-11 shrink-0 items-center gap-2 rounded-md bg-[var(--mk-gold)] px-6 text-sm font-semibold text-[var(--mk-ink)] transition-colors hover:bg-[var(--mk-gold-soft)]"
+								className="group inline-flex h-11 shrink-0 items-center gap-2 rounded-md bg-[var(--mk-gold)] px-6 text-sm font-medium text-[var(--mk-till-deep)] transition-colors hover:bg-[var(--mk-gold-soft)]"
 							>
 								Start free trial
 								<ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
