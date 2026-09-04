@@ -169,7 +169,7 @@ export default function HomePage() {
 							</Link>
 						</div>
 						<p className="mt-4 font-[var(--font-mk-mono)] text-xs text-[var(--mk-ink-soft)]">
-							No credit card required · Set up your business in minutes
+							No credit card required · Works worldwide · Priced in your currency
 						</p>
 					</div>
 

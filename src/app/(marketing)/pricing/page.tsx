@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Check, PackageSearch, Store, Landmark, Globe2 } from "lucide-react";
 import { Spinner } from "@/components/ui/Spinner";
@@ -36,6 +36,19 @@ const ROADMAP = [
 	},
 ];
 
+// Best-effort label so the currency switcher reads as "US Dollar" rather
+// than a bare ISO code — falls back to just the code for anything not
+// listed here (new PlanPrice currencies added later still render fine).
+const CURRENCY_LABELS: Record<string, string> = {
+	BDT: "Bangladeshi Taka",
+	USD: "US Dollar",
+	INR: "Indian Rupee",
+	GBP: "British Pound",
+	EUR: "Euro",
+	AED: "UAE Dirham",
+	SAR: "Saudi Riyal",
+};
+
 export default function PricingPage() {
 	// Pulled live from /subscription/plans (the same public, unauthenticated
 	// endpoint the in-app Subscription page uses) instead of a hardcoded list,
@@ -60,6 +73,31 @@ export default function PricingPage() {
 
 	const [currency, setCurrency] = useState("BDT");
 	const activeCurrency = currencies.includes(currency) ? currency : "BDT";
+
+	// Foreign visitors were always landing on BDT pricing by default and
+	// had to notice/click the switcher themselves — this guesses a better
+	// starting currency from the browser's own locale (no geo-IP call
+	// needed) the moment we know which currencies are actually available.
+	// Runs client-side only, so it can't affect the server-rendered markup;
+	// worst case a visitor briefly sees BDT before this fires.
+	const [hasAutoDetected, setHasAutoDetected] = useState(false);
+	useEffect(() => {
+		if (hasAutoDetected || currencies.length <= 1) return;
+		setHasAutoDetected(true);
+
+		const languages = typeof navigator !== "undefined" ? (navigator.languages?.length ? navigator.languages : [navigator.language]) : [];
+		let region: string | null = null;
+		for (const lang of languages) {
+			const match = /-([A-Z]{2})$/.exec(lang ?? "");
+			if (match) {
+				region = match[1];
+				break;
+			}
+		}
+
+		const guess = region === "BD" ? "BDT" : region === "IN" ? "INR" : region ? "USD" : null;
+		if (guess && currencies.includes(guess)) setCurrency(guess);
+	}, [currencies, hasAutoDetected]);
 
 	const priceFor = (plan: (typeof plans)[number]) => {
 		if (activeCurrency === "BDT") return Number(plan.price);
@@ -90,12 +128,13 @@ export default function PricingPage() {
 				</div>
 
 				{!isLoading && !isError && currencies.length > 1 && (
-					<div className="mt-8 flex justify-center">
+					<div className="mt-8 flex flex-col items-center gap-2">
 						<div className="inline-flex rounded-md border border-[var(--mk-line)] bg-[var(--mk-paper-raised)] p-1">
 							{currencies.map(c => (
 								<button
 									key={c}
 									onClick={() => setCurrency(c)}
+									title={CURRENCY_LABELS[c] ?? c}
 									className={`rounded-sm px-4 py-1.5 font-[var(--font-mk-mono)] text-xs font-medium transition-colors ${
 										activeCurrency === c
 											? "bg-[var(--mk-till)] text-white"
@@ -106,6 +145,10 @@ export default function PricingPage() {
 								</button>
 							))}
 						</div>
+						<p className="max-w-md text-center text-xs text-[var(--mk-ink-soft)]">
+							Prices convert instantly — you&apos;ll be charged in whichever of these matches your payment
+							method at checkout.
+						</p>
 					</div>
 				)}
 

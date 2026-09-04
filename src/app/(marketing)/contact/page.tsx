@@ -86,6 +86,7 @@ export default function ContactPage() {
 							<div>
 								<p className="text-sm font-medium text-[var(--mk-ink)]">Office</p>
 								<p className="text-sm text-[var(--mk-ink-soft)]">Dhaka, Bangladesh</p>
+								<p className="mt-0.5 text-xs text-[var(--mk-ink-soft)]">We work with businesses worldwide — wherever you are, reach out.</p>
 							</div>
 						</div>
 					</div>
