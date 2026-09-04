@@ -407,7 +407,7 @@ export default function PosPage() {
 						)}
 					</div>
 
-					<div className="overflow-hidden rounded-xl border border-slate-200">
+					<div className="overflow-x-auto rounded-xl border border-slate-200">
 						<table className="w-full text-left text-sm">
 							<thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
 								<tr>

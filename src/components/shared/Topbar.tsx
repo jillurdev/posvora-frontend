@@ -69,7 +69,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
 					</select>
 				)}
 			</div>
-			<div className="flex items-center gap-4">
+			<div className="flex items-center gap-2 sm:gap-4">
 				<SubscriptionPlanBadge />
 
 				<div ref={bellRef} className="relative">
@@ -87,7 +87,7 @@ export function Topbar({ onMenuClick }: { onMenuClick?: () => void }) {
 					</button>
 
 					{bellOpen && (
-						<div className="absolute right-0 z-20 mt-2 w-80 rounded-xl border border-slate-200 bg-white shadow-lg">
+						<div className="fixed inset-x-4 top-16 z-20 w-auto rounded-xl border border-slate-200 bg-white shadow-lg sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 sm:w-80">
 							<div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
 								<p className="text-sm font-semibold text-slate-900">Notifications</p>
 								{unreadCount > 0 && (

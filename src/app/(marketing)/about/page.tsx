@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Target, Heart, Users2, Store, Landmark, Globe2, Layers, Coins, Eye } from "lucide-react";
 import { Reveal } from "@/components/marketing/Reveal";
+
+export const metadata: Metadata = {
+	title: "About Us",
+	description:
+		"Posvora is built for businesses that run on the ground — one system for sales, inventory, purchasing, accounting and reporting instead of a dozen disconnected tools.",
+};
 
 const PILLARS = [
 	{
@@ -141,7 +148,7 @@ export default function AboutPage() {
 												className={
 													r.status === "Live now"
 														? "rounded-full bg-[var(--mk-till-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--mk-till-deep)]"
-														: "rounded-full bg-[var(--mk-gold-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--mk-gold)]"
+														: "rounded-full bg-[var(--mk-gold-soft)] px-2 py-0.5 text-[11px] font-medium text-[var(--mk-ink)]"
 												}
 											>
 												{r.status}

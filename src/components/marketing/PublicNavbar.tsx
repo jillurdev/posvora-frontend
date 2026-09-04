@@ -76,7 +76,12 @@ export function PublicNavbar() {
 					)}
 				</div>
 
-				<button className="p-2 text-[var(--mk-ink-soft)] md:hidden" onClick={() => setOpen(!open)}>
+				<button
+					className="p-2 text-[var(--mk-ink-soft)] md:hidden"
+					onClick={() => setOpen(!open)}
+					aria-label={open ? "Close menu" : "Open menu"}
+					aria-expanded={open}
+				>
 					{open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
 				</button>
 			</div>
