@@ -17,6 +17,7 @@ import {
 	CreditCard,
 	Settings,
 	LifeBuoy,
+	BarChart3,
 } from "lucide-react";
 import type { SystemRole } from "@/types/roles";
 
@@ -37,6 +38,7 @@ export const NAV_ITEMS: NavItem[] = [
 	{ label: "Suppliers", href: "suppliers", icon: Truck },
 	{ label: "Employees", href: "employees", icon: UserCog, roles: ["OWNER", "MANAGER", "HR"] },
 	{ label: "Accounting", href: "accounting", icon: Wallet, roles: ["OWNER", "MANAGER", "ACCOUNTANT"] },
+	{ label: "Reports", href: "reports", icon: BarChart3, roles: ["OWNER", "MANAGER", "ACCOUNTANT"] },
 	{ label: "Shops", href: "shops", icon: Store, roles: ["OWNER"] },
 	{ label: "Branches", href: "branches", icon: Building2, roles: ["OWNER", "MANAGER"] },
 	{ label: "Warehouses", href: "warehouses", icon: Warehouse, roles: ["OWNER", "MANAGER", "STORE_KEEPER"] },
